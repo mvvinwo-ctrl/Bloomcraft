@@ -458,6 +458,16 @@ function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (m) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m]));
+}
+
 // ===== MODAL HANDLING =====
 let currentEditId = null;
 let currentTable = null;
@@ -465,28 +475,33 @@ let currentTable = null;
 function openFormModal(table, record = null) {
   currentTable = table;
   const title = table === 'income' ? 'Sale' : 'Expense';
+  const dateVal = record?.date || new Date().toISOString().split('T')[0];
+  const descVal = escapeHtml(record?.description || '');
+  const paymentVal = record?.payment || 'Cash';
+  const amountVal = record?.amount || '';
+
   const modalHtml = `
     <div class="modal">
       <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="closeModal()">×</button>
       <h2>${record ? 'Edit ' + title : 'Add ' + title}</h2>
       <div class="field">
         <label>Date</label>
-        <input type="date" id="formDate" value="${record?.date || new Date().toISOString().split('T')[0]}" />
+        <input type="date" id="formDate" value="${dateVal}" />
       </div>
       <div class="field">
         <label>Description</label>
-        <input type="text" id="formDesc" value="${record?.description || ''}" placeholder="e.g. Product sale" required />
+        <input type="text" id="formDesc" value="${descVal}" placeholder="e.g. Product sale" required />
       </div>
       <div class="field">
         <label>Payment Method</label>
         <select id="formPayment">
-          <option value="Cash" ${record?.payment === 'Cash' ? 'selected' : ''}>Cash</option>
-          <option value="Transfer" ${record?.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
+          <option value="Cash" ${paymentVal === 'Cash' ? 'selected' : ''}>Cash</option>
+          <option value="Transfer" ${paymentVal === 'Transfer' ? 'selected' : ''}>Transfer</option>
         </select>
       </div>
       <div class="field">
         <label>Amount (MVR)</label>
-        <input type="number" id="formAmount" value="${record?.amount || ''}" min="0" step="0.01" placeholder="0.00" required />
+        <input type="number" id="formAmount" value="${amountVal}" min="0" step="0.01" placeholder="0.00" required />
       </div>
       <button class="btn" onclick="saveRecord()">${record ? 'Update' : 'Save'}</button>
     </div>
@@ -541,7 +556,6 @@ async function fetchRecords(table, filter = {}) {
   const { data, error } = await query.order('date', { ascending: false });
   if (error) {
     console.error('Fetch error:', error);
-    alert('Error loading data. Please refresh.');
     return [];
   }
   return data;
@@ -568,48 +582,49 @@ async function renderDashboard() {
   netEl.textContent = formatMVR(net);
   netEl.style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
 
-  const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
-  if (ctx) {
-    if (summaryBarChart) summaryBarChart.destroy();
-    summaryBarChart = new Chart(ctx, {
-      type: 'bar',
-      data: {  // ✅ FIXED: was missing "data:" key
-        labels: ['Sale', 'Expenses'],
-        datasets: [{
-          label: 'Amount (MVR)',
-          data: [totalIncome, totalExpenses],
-          backgroundColor: ['#2fb6ac', '#ff6b6b'],
-          borderWidth: 0,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } }
-        }
+  const ctx = document.getElementById('summaryBarChart').getContext('2d');
+  if (summaryBarChart) summaryBarChart.destroy();
+  summaryBarChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Sale', 'Expenses'],
+      datasets: [{
+        label: 'Amount (MVR)',
+        data: [totalIncome, totalExpenses],
+        backgroundColor: ['#2fb6ac', '#ff6b6b'], // ✅ Expense bar is red
+        borderWidth: 0,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } }
       }
-    });
-  }
+    }
+  });
 }
 
 async function renderIncome() {
   const tbody = document.querySelector('#incomeTable tbody');
-  const filter = { from: document.getElementById('incomeFrom')?.value, to: document.getElementById('incomeTo')?.value };
+  const filter = {
+    from: document.getElementById('incomeFrom')?.value,
+    to: document.getElementById('incomeTo')?.value
+  };
   const records = await fetchRecords('income', filter);
   tbody.innerHTML = records.length === 0 
     ? `<tr><td colspan="5" class="empty-state">No sale records</td></tr>`
     : records.map(r => `
         <tr>
           <td>${r.date}</td>
-          <td>${r.description}</td>
+          <td>${escapeHtml(r.description)}</td>
           <td>${r.payment}</td>
           <td style="color:var(--success)">${formatMVR(r.amount)}</td>
           <td class="table-actions">
-            <button class="btn small secondary" onclick="generateInvoice(${JSON.stringify(r).replace(/'/g, "\\'")})">Invoice</button>
+            <button class="btn small secondary" onclick="generateInvoice(${JSON.stringify(r)})">Invoice</button>
             <button class="btn small secondary" onclick="editIncome('${r.id}')">Edit</button>
             <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
           </td>
@@ -622,14 +637,17 @@ async function renderIncome() {
 
 async function renderExpenses() {
   const tbody = document.querySelector('#expensesTable tbody');
-  const filter = { from: document.getElementById('expensesFrom')?.value, to: document.getElementById('expensesTo')?.value };
+  const filter = {
+    from: document.getElementById('expensesFrom')?.value,
+    to: document.getElementById('expensesTo')?.value
+  };
   const records = await fetchRecords('expenses', filter);
   tbody.innerHTML = records.length === 0 
     ? `<tr><td colspan="5" class="empty-state">No expense records</td></tr>`
     : records.map(r => `
         <tr>
           <td>${r.date}</td>
-          <td>${r.description}</td>
+          <td>${escapeHtml(r.description)}</td>
           <td>${r.payment}</td>
           <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
           <td class="table-actions">
@@ -648,9 +666,9 @@ function generateInvoice(record) {
   const invNum = `INV-${Date.now().toString().slice(-6)}`;
   document.getElementById('invoiceNumber').textContent = invNum;
   document.getElementById('invoiceDate').textContent = record.date;
-  document.getElementById('invoiceDesc').textContent = record.description;
+  document.getElementById('invoiceDesc').textContent = escapeHtml(record.description);
   document.getElementById('invoicePayment').textContent = record.payment;
-  document.getElementById('invoiceItemDesc').textContent = record.description;
+  document.getElementById('invoiceItemDesc').textContent = escapeHtml(record.description);
   const amt = formatMVR(record.amount);
   document.getElementById('invoiceAmount').textContent = amt;
   document.getElementById('invoiceTotal').textContent = amt;
@@ -680,40 +698,33 @@ async function deleteExpense(id) {
   }
 }
 
-function editIncome(id) {
-  supabase.from('income').select('*').eq('id', id).then(({ data }) => {
-    if (data?.[0]) openFormModal('income', data[0]);
-  }).catch(err => {
+async function editIncome(id) {
+  const { data, error } = await supabase.from('income').select('*').eq('id', id);
+  if (error || !data?.[0]) {
     alert('Failed to load record.');
-    console.error(err);
-  });
+    console.error(error);
+  } else {
+    openFormModal('income', data[0]);
+  }
 }
 
-function editExpense(id) {
-  supabase.from('expenses').select('*').eq('id', id).then(({ data }) => {
-    if (data?.[0]) openFormModal('expenses', data[0]);
-  }).catch(err => {
+async function editExpense(id) {
+  const { data, error } = await supabase.from('expenses').select('*').eq('id', id);
+  if (error || !data?.[0]) {
     alert('Failed to load record.');
-    console.error(err);
-  });
+    console.error(error);
+  } else {
+    openFormModal('expenses', data[0]);
+  }
 }
 
 // ===== DELETE ALL =====
 async function deleteAllIncome() {
   if (!confirm('Delete ALL sale records? This cannot be undone.')) return;
-  const { data, error } = await supabase.from('income').select('id');
+  const { error } = await supabase.from('income').delete();
   if (error) {
-    alert('Failed to check records.');
-    return;
-  }
-  if (data.length === 0) {
-    alert('No sale records to delete.');
-    return;
-  }
-  const { error: delError } = await supabase.from('income').delete();
-  if (delError) {
     alert('Failed to delete all sales.');
-    console.error(delError);
+    console.error(error);
   } else {
     refreshAll();
   }
@@ -721,19 +732,10 @@ async function deleteAllIncome() {
 
 async function deleteAllExpenses() {
   if (!confirm('Delete ALL expense records? This cannot be undone.')) return;
-  const { data, error } = await supabase.from('expenses').select('id');
+  const { error } = await supabase.from('expenses').delete();
   if (error) {
-    alert('Failed to check records.');
-    return;
-  }
-  if (data.length === 0) {
-    alert('No expense records to delete.');
-    return;
-  }
-  const { error: delError } = await supabase.from('expenses').delete();
-  if (delError) {
     alert('Failed to delete all expenses.');
-    console.error(delError);
+    console.error(error);
   } else {
     refreshAll();
   }
@@ -742,12 +744,7 @@ async function deleteAllExpenses() {
 // ===== CSV EXPORT =====
 function exportCsv(filename, headers, table) {
   supabase.from(table).select('*').then(({ data, error }) => {
-    if (error) {
-      alert('Export failed.');
-      console.error(error);
-      return;
-    }
-    if (!data?.length) {
+    if (error || !data?.length) {
       alert('No data to export.');
       return;
     }
@@ -772,9 +769,8 @@ async function refreshAll() {
 }
 
 // ===== INIT APP ON LOAD =====
-window.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Set default date filters to current month
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
     const today = now.toISOString().split('T')[0];
@@ -802,36 +798,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Filters
-    const pages = ['dashboard','income','expenses'];
-    pages.forEach(p => {
-      const cap = p.charAt(0).toUpperCase() + p.slice(1);
-      const applyBtn = document.getElementById(`apply${cap}Filter`);
-      const clearBtn = document.getElementById(`clear${cap}Filter`);
-      if (applyBtn) {
-        applyBtn.addEventListener('click', () => {
-          if(p==='dashboard') renderDashboard();
-          else if(p==='income') renderIncome();
-          else renderExpenses();
-        });
-      }
-      if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-          document.getElementById(`${p}From`).value = '';
-          document.getElementById(`${p}To`).value = '';
-          if(p==='dashboard') renderDashboard();
-          else if(p==='income') renderIncome();
-          else renderExpenses();
+    const config = [
+      { page: 'dashboard', render: renderDashboard },
+      { page: 'income', render: renderIncome },
+      { page: 'expenses', render: renderExpenses }
+    ];
+
+    config.forEach(({ page, render }) => {
+      const cap = page.charAt(0).toUpperCase() + page.slice(1);
+      const apply = document.getElementById(`apply${cap}Filter`);
+      const clear = document.getElementById(`clear${cap}Filter`);
+      if (apply) apply.addEventListener('click', render);
+      if (clear) {
+        clear.addEventListener('click', () => {
+          document.getElementById(`${page}From`).value = '';
+          document.getElementById(`${page}To`).value = '';
+          render();
         });
       }
     });
 
     // Buttons
-    document.getElementById('addIncomeBtn')?.addEventListener('click', () => openFormModal('income'));
-    document.getElementById('addExpenseBtn')?.addEventListener('click', () => openFormModal('expenses'));
-    document.getElementById('deleteAllIncomeBtn')?.addEventListener('click', deleteAllIncome);
-    document.getElementById('deleteAllExpensesBtn')?.addEventListener('click', deleteAllExpenses);
-    document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', ['Date','Description','Payment','Amount'], 'income'));
-    document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], 'expenses'));
+    document.getElementById('addIncomeBtn').addEventListener('click', () => openFormModal('income'));
+    document.getElementById('addExpenseBtn').addEventListener('click', () => openFormModal('expenses'));
+    document.getElementById('deleteAllIncomeBtn').addEventListener('click', deleteAllIncome);
+    document.getElementById('deleteAllExpensesBtn').addEventListener('click', deleteAllExpenses);
+    document.getElementById('exportIncomeCsv').addEventListener('click', () => exportCsv('sale.csv', ['Date','Description','Payment','Amount'], 'income'));
+    document.getElementById('exportExpensesCsv').addEventListener('click', () => exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], 'expenses'));
 
   } catch (err) {
     console.error('Init error:', err);
