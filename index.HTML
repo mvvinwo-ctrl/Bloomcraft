@@ -81,13 +81,6 @@
       border-radius: 20px;
     }
 
-    .header-right{ 
-      display:flex; 
-      gap:8px; 
-      align-items:center; 
-      flex-wrap: wrap;
-    }
-
     main{
       display:flex;
       flex-direction: column;
@@ -146,6 +139,7 @@
       font-weight:700;
       border-bottom: 2px solid rgba(0,0,0,0.06);
       white-space: nowrap;
+      min-width: 80px;
     }
     tbody td{
       padding:10px 8px;
@@ -196,9 +190,9 @@
       border-radius:6px;
       font-size:13px;
       background: #fff;
-      min-width: 120px;
+      min-width: 100px;
       width: 100%;
-      max-width: 150px;
+      max-width: 130px;
     }
     .date-filters button {
       padding: 8px 12px;
@@ -295,6 +289,7 @@
       .date-filters input[type="date"] {
         min-width: 100%;
         max-width: 100%;
+        width: 100%;
       }
       .btn{
         padding: 8px 10px;
@@ -321,6 +316,103 @@
         padding: 4px 8px;
         font-size: 12px;
         border-radius: 8px;
+      }
+    }
+
+    /* Fix for table on mobile */
+    @media (max-width: 480px) {
+      .controls {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .date-filters {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .nav {
+        gap: 4px;
+        padding: 4px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+      }
+      .nav a {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 8px;
+      }
+      .page-title {
+        font-size: 22px;
+        margin-bottom: 12px;
+      }
+      .stat .value {
+        font-size: 18px;
+      }
+      .btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .btn.small {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+      
+      /* Make table more mobile-friendly */
+      table {
+        font-size: 12px;
+        min-width: 100%;
+      }
+      thead th {
+        padding: 8px 6px;
+        font-size: 12px;
+        min-width: 60px;
+      }
+      tbody td {
+        padding: 8px 6px;
+        font-size: 12px;
+      }
+      .table-actions {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .table-actions button {
+        padding: 4px 6px;
+        font-size: 10px;
+        min-width: 40px;
+        width: auto;
+      }
+      
+      /* Improve date filter on small screens */
+      .date-filters {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      .date-filters .filter-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      .date-filters label {
+        font-size: 12px;
+        margin: 0;
+        padding: 0;
+      }
+      .date-filters input[type="date"] {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100px;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+      .date-filters button {
+        width: 100%;
+        max-width: 100%;
+        padding: 6px 10px;
+        font-size: 12px;
       }
     }
 
@@ -391,6 +483,7 @@
       display:flex; 
       gap:4px; 
       flex-wrap: wrap;
+      justify-content: center;
     }
     .empty-state {
       text-align: center;
@@ -472,95 +565,62 @@
       touch-action: manipulation;
     }
 
-    /* Remove admin text */
-    .header-right {
-      display: none !important;
-    }
-
-    /* Center content */
-    .app {
-      margin: 0 auto;
+    /* Center dashboard chart */
+    .chart-container {
       width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .chart-container canvas {
       max-width: 100%;
+      height: auto !important;
     }
 
-    /* Improve date filter layout */
-    .date-filters {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    .date-filters .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    .date-filters label {
-      font-weight: 600;
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .date-filters input[type="date"] {
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 13px;
-      background: #fff;
-      min-width: 120px;
-      width: 100%;
-      max-width: 150px;
-    }
-    .date-filters button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 8px;
-      min-width: 80px;
-      width: 100%;
-      max-width: 120px;
-      text-align: center;
-    }
-
-    /* Make sure everything fits on mobile */
+    /* Improve table header visibility on mobile */
     @media (max-width: 480px) {
-      .controls {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .date-filters {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .nav {
-        gap: 4px;
-        padding: 4px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 12px;
-      }
-      .nav a {
-        padding: 4px 8px;
+      thead th {
+        min-width: 60px;
         font-size: 12px;
-        border-radius: 8px;
+        padding: 6px 4px;
       }
-      .page-title {
-        font-size: 22px;
-        margin-bottom: 12px;
+      .table-actions {
+        justify-content: center;
+        gap: 2px;
       }
-      .stat .value {
-        font-size: 18px;
-      }
-      .btn {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-      .btn.small {
-        padding: 4px 8px;
+      .table-actions button {
+        padding: 4px 6px;
         font-size: 10px;
+        min-width: 40px;
+        width: auto;
+        white-space: nowrap;
+      }
+      /* Make sure actions column doesn't get cut off */
+      table {
+        table-layout: fixed;
+      }
+      thead th:last-child, tbody td:last-child {
+        width: 80px;
+        min-width: 80px;
+      }
+    }
+
+    /* Fix for edit/delete buttons being cut off */
+    @media (max-width: 480px) {
+      .table-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 2px;
+        flex-wrap: nowrap;
+        justify-content: center;
+      }
+      .table-actions button {
+        padding: 4px 6px;
+        font-size: 10px;
+        min-width: 40px;
+        width: auto;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
     }
   </style>
@@ -582,8 +642,6 @@
         <a href="#" data-page="income">Sale</a>
         <a href="#" data-page="expenses">Expenses</a>
       </nav>
-
-      <!-- Admin section removed as requested -->
     </header>
 
     <main id="content">
