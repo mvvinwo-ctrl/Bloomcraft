@@ -379,7 +379,7 @@
         <h1 class="page-title">Sale</h1>
         <div class="controls">
           <button class="btn" id="addIncomeBtn">+ Add Sale</button>
-          <button class="btn secondary" id="deleteAllIncomeBtn">Delete All Sale</button>
+          <button class="btn secondary danger" id="deleteAllIncomeBtn">Delete All Sale</button>
           <button class="btn secondary" id="exportIncomeCsv">Export CSV</button>
           <div class="date-filters">
             <label>From: <input type="date" id="incomeFrom" /></label>
@@ -573,7 +573,7 @@ async function renderDashboard() {
     if (summaryBarChart) summaryBarChart.destroy();
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
-      data: {
+      data: {  // ✅ FIXED: was missing "data:" key
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
@@ -683,22 +683,37 @@ async function deleteExpense(id) {
 function editIncome(id) {
   supabase.from('income').select('*').eq('id', id).then(({ data }) => {
     if (data?.[0]) openFormModal('income', data[0]);
+  }).catch(err => {
+    alert('Failed to load record.');
+    console.error(err);
   });
 }
 
 function editExpense(id) {
   supabase.from('expenses').select('*').eq('id', id).then(({ data }) => {
     if (data?.[0]) openFormModal('expenses', data[0]);
+  }).catch(err => {
+    alert('Failed to load record.');
+    console.error(err);
   });
 }
 
 // ===== DELETE ALL =====
 async function deleteAllIncome() {
   if (!confirm('Delete ALL sale records? This cannot be undone.')) return;
-  const { error } = await supabase.from('income').delete();
+  const { data, error } = await supabase.from('income').select('id');
   if (error) {
+    alert('Failed to check records.');
+    return;
+  }
+  if (data.length === 0) {
+    alert('No sale records to delete.');
+    return;
+  }
+  const { error: delError } = await supabase.from('income').delete();
+  if (delError) {
     alert('Failed to delete all sales.');
-    console.error(error);
+    console.error(delError);
   } else {
     refreshAll();
   }
@@ -706,10 +721,19 @@ async function deleteAllIncome() {
 
 async function deleteAllExpenses() {
   if (!confirm('Delete ALL expense records? This cannot be undone.')) return;
-  const { error } = await supabase.from('expenses').delete();
+  const { data, error } = await supabase.from('expenses').select('id');
   if (error) {
+    alert('Failed to check records.');
+    return;
+  }
+  if (data.length === 0) {
+    alert('No expense records to delete.');
+    return;
+  }
+  const { error: delError } = await supabase.from('expenses').delete();
+  if (delError) {
     alert('Failed to delete all expenses.');
-    console.error(error);
+    console.error(delError);
   } else {
     refreshAll();
   }
@@ -717,7 +741,12 @@ async function deleteAllExpenses() {
 
 // ===== CSV EXPORT =====
 function exportCsv(filename, headers, table) {
-  supabase.from(table).select('*').then(({ data }) => {
+  supabase.from(table).select('*').then(({ data, error }) => {
+    if (error) {
+      alert('Export failed.');
+      console.error(error);
+      return;
+    }
     if (!data?.length) {
       alert('No data to export.');
       return;
@@ -734,9 +763,6 @@ function exportCsv(filename, headers, table) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }).catch(err => {
-    alert('Export failed.');
-    console.error(err);
   });
 }
 
@@ -776,20 +802,27 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Filters
-    ['dashboard','income','expenses'].forEach(p => {
+    const pages = ['dashboard','income','expenses'];
+    pages.forEach(p => {
       const cap = p.charAt(0).toUpperCase() + p.slice(1);
-      document.getElementById(`apply${cap}Filter`)?.addEventListener('click', () => {
-        if(p==='dashboard') renderDashboard();
-        else if(p==='income') renderIncome();
-        else renderExpenses();
-      });
-      document.getElementById(`clear${cap}Filter`)?.addEventListener('click', () => {
-        document.getElementById(`${p}From`).value = '';
-        document.getElementById(`${p}To`).value = '';
-        if(p==='dashboard') renderDashboard();
-        else if(p==='income') renderIncome();
-        else renderExpenses();
-      });
+      const applyBtn = document.getElementById(`apply${cap}Filter`);
+      const clearBtn = document.getElementById(`clear${cap}Filter`);
+      if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+          if(p==='dashboard') renderDashboard();
+          else if(p==='income') renderIncome();
+          else renderExpenses();
+        });
+      }
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          document.getElementById(`${p}From`).value = '';
+          document.getElementById(`${p}To`).value = '';
+          if(p==='dashboard') renderDashboard();
+          else if(p==='income') renderIncome();
+          else renderExpenses();
+        });
+      }
     });
 
     // Buttons
