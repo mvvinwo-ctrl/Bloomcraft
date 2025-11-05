@@ -623,6 +623,561 @@
         flex-shrink: 0;
       }
     }
+
+    /* Improved date filter styling */
+    .date-filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    
+    .date-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    
+    .date-filter-label {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    
+    .date-filter-input {
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      min-width: 100px;
+      width: 100%;
+      max-width: 130px;
+    }
+    
+    .date-filter-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    
+    .date-filter-button {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      min-width: 80px;
+      width: 100%;
+      max-width: 120px;
+      text-align: center;
+    }
+
+    /* Enhanced responsive design for all components */
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .date-filters {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .date-filter-group {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .date-filter-item {
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+      }
+      
+      .date-filter-label {
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+      
+      .date-filter-input {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100px;
+      }
+      
+      .date-filter-buttons {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .date-filter-button {
+        width: 100%;
+        max-width: 100%;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+    }
+
+    /* Fixed chart container for better responsiveness */
+    .dashboard-chart-container {
+      width: 100%;
+      height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 16px;
+    }
+    
+    .dashboard-chart {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    /* Better spacing for mobile */
+    @media (max-width: 576px) {
+      .card {
+        padding: 12px;
+      }
+      
+      .stat {
+        padding: 12px;
+      }
+      
+      .stat h4 {
+        font-size: 12px;
+      }
+      
+      .stat .value {
+        font-size: 18px;
+      }
+      
+      .page-title {
+        font-size: 22px;
+        margin-bottom: 12px;
+      }
+      
+      .controls {
+        gap: 8px;
+      }
+      
+      .btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      
+      .btn.small {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+    }
+
+    /* Improved table layout for small screens */
+    @media (max-width: 480px) {
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      table {
+        min-width: 600px;
+        font-size: 12px;
+      }
+      
+      thead th {
+        padding: 6px 4px;
+        font-size: 11px;
+        min-width: 60px;
+      }
+      
+      tbody td {
+        padding: 6px 4px;
+        font-size: 11px;
+        word-break: break-word;
+      }
+      
+      .table-actions {
+        gap: 2px;
+        flex-wrap: nowrap;
+        justify-content: center;
+      }
+      
+      .table-actions button {
+        padding: 4px 6px;
+        font-size: 10px;
+        min-width: 40px;
+        width: auto;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
+
+    /* Fix for edit/delete buttons not working */
+    .table-actions button {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .table-actions button:hover {
+      opacity: 0.9;
+    }
+    
+    .table-actions button:active {
+      transform: scale(0.98);
+    }
+
+    /* Add some spacing between sections */
+    .section-spacing {
+      margin-bottom: 24px;
+    }
+
+    /* Improved modal styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 12, 17, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .modal {
+      width: 90%;
+      max-width: 420px;
+      background: var(--card);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(3, 20, 24, 0.3);
+      text-align: left;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Improved invoice modal */
+    #invoiceModal .modal {
+      max-width: 800px;
+      padding: 20px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--turquoise);
+      padding-bottom: 8px;
+    }
+    
+    .invoice-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--accent-text);
+    }
+    
+    .invoice-info {
+      margin-bottom: 16px;
+    }
+    
+    .invoice-info div {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+    
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    
+    .invoice-table th,
+    .invoice-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    
+    .invoice-table th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    
+    .invoice-total {
+      text-align: right;
+      margin-top: 16px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .invoice-footer {
+      margin-top: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* Fix for date filters in all sections */
+    .date-filter-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .date-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    
+    .date-filter-field {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    
+    .date-filter-label {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    
+    .date-filter-input {
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      min-width: 100px;
+      width: 100%;
+      max-width: 130px;
+    }
+    
+    .date-filter-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    
+    .date-filter-button {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      min-width: 80px;
+      width: 100%;
+      max-width: 120px;
+      text-align: center;
+    }
+
+    /* Responsive improvements for all sections */
+    @media (max-width: 768px) {
+      .date-filter-section {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .date-filter-row {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .date-filter-field {
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+      }
+      
+      .date-filter-label {
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+      
+      .date-filter-input {
+        width: 100%;
+        max-width: 100%;
+        min-width: 100px;
+      }
+      
+      .date-filter-buttons {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .date-filter-button {
+        width: 100%;
+        max-width: 100%;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+    }
+
+    /* Final fixes for all issues */
+    .chart-container {
+      width: 100%;
+      height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 16px;
+    }
+    
+    .chart-container canvas {
+      max-width: 100%;
+      height: auto !important;
+      width: 100% !important;
+    }
+
+    /* Ensure all buttons are clickable */
+    .btn, .table-actions button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    /* Improve accessibility */
+    .btn:focus, .table-actions button:focus {
+      outline: 2px solid var(--turquoise);
+      outline-offset: 2px;
+    }
+
+    /* Fix for edit/delete buttons */
+    .edit-btn, .delete-btn {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .edit-btn:hover, .delete-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .edit-btn:active, .delete-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Better table layout for mobile */
+    @media (max-width: 480px) {
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      table {
+        min-width: 600px;
+        font-size: 12px;
+      }
+      
+      thead th {
+        padding: 6px 4px;
+        font-size: 11px;
+        min-width: 60px;
+      }
+      
+      tbody td {
+        padding: 6px 4px;
+        font-size: 11px;
+        word-break: break-word;
+      }
+      
+      .table-actions {
+        gap: 2px;
+        flex-wrap: nowrap;
+        justify-content: center;
+      }
+      
+      .table-actions button {
+        padding: 4px 6px;
+        font-size: 10px;
+        min-width: 40px;
+        width: auto;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
+
+    /* Final responsive design adjustments */
+    @media (max-width: 375px) {
+      .app {
+        margin: 0;
+        padding: 0;
+      }
+      
+      .card {
+        padding: 12px;
+      }
+      
+      .stat {
+        padding: 12px;
+      }
+      
+      .stat h4 {
+        font-size: 12px;
+      }
+      
+      .stat .value {
+        font-size: 16px;
+      }
+      
+      .page-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+      
+      .controls {
+        gap: 8px;
+      }
+      
+      .btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      
+      .btn.small {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+      
+      .date-filter-input {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+      
+      .date-filter-button {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -651,14 +1206,20 @@
         <h1 class="page-title">Overview</h1>
 
         <div class="controls">
-          <div class="date-filters">
-            <div class="filter-group">
-              <label>From: <input type="date" id="dashboardFrom" /></label>
-              <label>To: <input type="date" id="dashboardTo" /></label>
+          <div class="date-filter-section">
+            <div class="date-filter-row">
+              <div class="date-filter-field">
+                <label class="date-filter-label">From:</label>
+                <input type="date" id="dashboardFrom" class="date-filter-input" />
+              </div>
+              <div class="date-filter-field">
+                <label class="date-filter-label">To:</label>
+                <input type="date" id="dashboardTo" class="date-filter-input" />
+              </div>
             </div>
-            <div class="filter-group">
-              <button class="btn secondary" id="applyDashboardFilter">Apply</button>
-              <button class="btn secondary" id="clearDashboardFilter">Clear</button>
+            <div class="date-filter-buttons">
+              <button class="btn secondary date-filter-button" id="applyDashboardFilter">Apply</button>
+              <button class="btn secondary date-filter-button" id="clearDashboardFilter">Clear</button>
             </div>
           </div>
         </div>
@@ -682,8 +1243,8 @@
 
         <div class="card" style="margin-top:24px;">
           <h4 class="muted" style="margin:0 0 12px;">Summary (Bar Chart)</h4>
-          <div class="chart-container">
-            <canvas id="summaryBarChart"></canvas>
+          <div class="dashboard-chart-container">
+            <canvas id="summaryBarChart" class="dashboard-chart"></canvas>
           </div>
         </div>
       </section>
@@ -694,14 +1255,20 @@
         <div class="controls">
           <button class="btn" id="addIncomeBtn">+ Add Sale</button>
           <button class="btn secondary" id="exportIncomeCsv">Export CSV</button>
-          <div class="date-filters">
-            <div class="filter-group">
-              <label>From: <input type="date" id="incomeFrom" /></label>
-              <label>To: <input type="date" id="incomeTo" /></label>
+          <div class="date-filter-section">
+            <div class="date-filter-row">
+              <div class="date-filter-field">
+                <label class="date-filter-label">From:</label>
+                <input type="date" id="incomeFrom" class="date-filter-input" />
+              </div>
+              <div class="date-filter-field">
+                <label class="date-filter-label">To:</label>
+                <input type="date" id="incomeTo" class="date-filter-input" />
+              </div>
             </div>
-            <div class="filter-group">
-              <button class="btn secondary" id="applyIncomeFilter">Apply</button>
-              <button class="btn secondary" id="clearIncomeFilter">Clear</button>
+            <div class="date-filter-buttons">
+              <button class="btn secondary date-filter-button" id="applyIncomeFilter">Apply</button>
+              <button class="btn secondary date-filter-button" id="clearIncomeFilter">Clear</button>
             </div>
           </div>
         </div>
@@ -722,14 +1289,20 @@
         <div class="controls">
           <button class="btn" id="addExpenseBtn">+ Add Expense</button>
           <button class="btn secondary" id="exportExpensesCsv">Export CSV</button>
-          <div class="date-filters">
-            <div class="filter-group">
-              <label>From: <input type="date" id="expensesFrom" /></label>
-              <label>To: <input type="date" id="expensesTo" /></label>
+          <div class="date-filter-section">
+            <div class="date-filter-row">
+              <div class="date-filter-field">
+                <label class="date-filter-label">From:</label>
+                <input type="date" id="expensesFrom" class="date-filter-input" />
+              </div>
+              <div class="date-filter-field">
+                <label class="date-filter-label">To:</label>
+                <input type="date" id="expensesTo" class="date-filter-input" />
+              </div>
             </div>
-            <div class="filter-group">
-              <button class="btn secondary" id="applyExpensesFilter">Apply</button>
-              <button class="btn secondary" id="clearExpensesFilter">Clear</button>
+            <div class="date-filter-buttons">
+              <button class="btn secondary date-filter-button" id="applyExpensesFilter">Apply</button>
+              <button class="btn secondary date-filter-button" id="clearExpensesFilter">Clear</button>
             </div>
           </div>
         </div>
@@ -923,8 +1496,8 @@ function renderIncome() {
       <td style="color:var(--success)">${formatMVR(r.amount)}</td>
       <td class="table-actions">
         <button class="btn small secondary" onclick="generateInvoice(${r.id})">Invoice</button>
-        <button class="btn small secondary" onclick="openEditIncomeModal(${r.id})">Edit</button>
-        <button class="btn small danger" onclick="deleteIncome(${r.id})">Delete</button>
+        <button class="btn small secondary edit-btn" onclick="openEditIncomeModal(${r.id})">Edit</button>
+        <button class="btn small danger delete-btn" onclick="deleteIncome(${r.id})">Delete</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -970,8 +1543,8 @@ function renderExpenses() {
       <td>${r.payment}</td>
       <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
       <td class="table-actions">
-        <button class="btn small secondary" onclick="openEditExpenseModal(${r.id})">Edit</button>
-        <button class="btn small danger" onclick="deleteExpense(${r.id})">Delete</button>
+        <button class="btn small secondary edit-btn" onclick="openEditExpenseModal(${r.id})">Edit</button>
+        <button class="btn small danger delete-btn" onclick="deleteExpense(${r.id})">Delete</button>
       </td>
     `;
     tbody.appendChild(tr);
