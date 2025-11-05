@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bloomkraft — Business Portal (MVR)</title>
-  <!-- ✅ FIXED: Removed ALL trailing spaces in URLs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.40.0/supabase.min.js"></script>
   <style>
@@ -38,7 +37,6 @@
       border-radius: 20px;
       box-shadow: var(--shadow);
       overflow: hidden;
-      display: none;
     }
 
     header{
@@ -328,27 +326,9 @@
       color: var(--muted);
       font-size: 13px;
     }
-
-    /* Mask PIN as bullets */
-    #loginPin {
-      -webkit-text-security: disc;
-      letter-spacing: 8px;
-      padding-left: 8px;
-    }
   </style>
 </head>
 <body>
-
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" class="modal-backdrop">
-    <div class="modal">
-      <h2>🔐 Admin Login</h2>
-      <p>Enter your 4-digit PIN to access Bloomkraft</p>
-      <input type="text" id="loginPin" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" />
-      <div id="loginError" style="color:var(--danger); margin-top:8px; min-height:20px;"></div>
-      <button class="btn" id="loginBtn" style="width:100%; margin-top:16px;">Login</button>
-    </div>
-  </div>
 
   <div class="app" id="mainApp" role="application" aria-label="Bloomkraft business portal">
     <header>
@@ -462,71 +442,17 @@
   </div>
 
 <script>
-// ===== SUPABASE INIT (✅ NO TRAILING SPACE) =====
+// ===== SUPABASE INIT =====
 const supabaseUrl = 'https://skejswjowceevzkloiog.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
 const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-// ===== LOGIN SYSTEM =====
-const ADMIN_PIN = '5252';
-const loginModal = document.getElementById('loginModal');
-const mainApp = document.getElementById('mainApp');
-const loginPin = document.getElementById('loginPin');
-const loginBtn = document.getElementById('loginBtn');
-const loginError = document.getElementById('loginError');
-
-// Clear error on input
-loginPin.addEventListener('input', () => {
-  loginError.textContent = '';
-});
-
-// ✅ FULLY WORKING LOGIN FUNCTION
-function attemptLogin() {
-  const pin = loginPin.value.trim();
-  if (!pin) {
-    loginError.textContent = 'Please enter a PIN.';
-    return;
-  }
-  if (pin === ADMIN_PIN) {
-    sessionStorage.setItem('bloomkraft_logged_in', 'true');
-    loginModal.style.display = 'none';
-    mainApp.style.display = 'block';
-    initApp(); // Load data after login
-  } else {
-    loginError.textContent = 'Incorrect PIN. Please try again.';
-    loginPin.value = '';
-    loginPin.focus();
-  }
-}
-
-// ✅ BUTTON CLICK HANDLER ATTACHED CORRECTLY
-loginBtn.addEventListener('click', attemptLogin);
-
-// Also allow Enter key
-loginPin.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') attemptLogin();
-});
-
-// Check login on page load
-window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
-    // Already logged in
-    loginModal.style.display = 'none';
-    mainApp.style.display = 'block';
-    initApp();
-  } else {
-    // Show login
-    loginModal.style.display = 'flex';
-    loginPin.focus();
-  }
-});
 
 // ===== UTILS =====
 function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
 
-// ===== DATA =====
+// ===== DATA FETCHING & RENDERING =====
 async function fetchRecords(table, filter = {}) {
   let query = supabase.from(table).select('*');
   if (filter.from) query = query.gte('date', filter.from);
@@ -534,7 +460,7 @@ async function fetchRecords(table, filter = {}) {
   const { data, error } = await query.order('date', { ascending: false });
   if (error) {
     console.error('Fetch error:', error);
-    alert('Error loading data.');
+    alert('Error loading data. Please refresh.');
     return [];
   }
   return data;
@@ -564,14 +490,13 @@ async function renderDashboard() {
   const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
   if (ctx) {
     if (summaryBarChart) summaryBarChart.destroy();
-    // ✅ FIXED: Proper Chart.js syntax
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
-      data: { // ← THIS WAS MISSING!
+       {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-          data: [totalIncome, totalExpenses],
+           [totalIncome, totalExpenses],
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6
@@ -639,12 +564,6 @@ async function renderExpenses() {
 
 // ===== INVOICE =====
 function generateInvoice(record) {
-  // If record is string ID, fetch it
-  if (typeof record === 'string') {
-    // In full version, you'd fetch the record
-    console.warn('Record ID passed, but full record expected');
-    return;
-  }
   document.getElementById('invoiceNumber').textContent = `INV-${Date.now().toString().slice(-6)}`;
   document.getElementById('invoiceDate').textContent = record.date;
   document.getElementById('invoiceDesc').textContent = record.description;
@@ -656,7 +575,7 @@ function generateInvoice(record) {
   document.getElementById('invoiceModal').style.display = 'flex';
 }
 
-// ===== CRUD STUBS (replace with modals if needed) =====
+// ===== CRUD FUNCTIONS =====
 async function deleteIncome(id) {
   if (!confirm('Delete this sale?')) return;
   const { error } = await supabase.from('income').delete().eq('id', id);
@@ -670,12 +589,13 @@ async function deleteExpense(id) {
 function editIncome(id) { alert('Edit Sale ID: ' + id); }
 function editExpense(id) { alert('Edit Expense ID: ' + id); }
 
-// ===== INIT APP AFTER LOGIN =====
-async function initApp() {
+// ===== INIT APP ON LOAD =====
+window.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Set default date filters to this month
-    const today = new Date().toISOString().split('T')[0];
-    const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    // Set default date filters to current month
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const today = now.toISOString().split('T')[0];
     
     document.getElementById('dashboardFrom').value = firstDay;
     document.getElementById('dashboardTo').value = today;
@@ -687,8 +607,8 @@ async function initApp() {
     await renderDashboard();
     await renderIncome();
     await renderExpenses();
-    
-    // Nav
+
+    // Navigation
     document.querySelectorAll('.nav a').forEach(a => {
       a.addEventListener('click', e => {
         e.preventDefault();
@@ -726,10 +646,11 @@ async function initApp() {
 
   } catch (err) {
     console.error('Init error:', err);
-    alert('App failed to load. Please refresh.');
+    alert('Failed to load app. Please refresh.');
   }
-}
+});
 
+// Export CSV
 function exportCsv(filename, headers, table) {
   supabase.from(table).select('*').then(({ data }) => {
     if (!data) return;
