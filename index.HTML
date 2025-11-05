@@ -481,7 +481,7 @@
 // ===== SUPABASE INIT =====
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm';
 
-// 🔑 REPLACE WITH YOUR SUPABASE PROJECT CREDENTIALS
+// 🔑 REPLACE WITH YOUR SUPABASE PROJECT CREDENTIALS (spaces removed!)
 const supabaseUrl = 'https://skejswjowceevzkloiog.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
 
@@ -672,88 +672,6 @@ function renderExpenses() {
 }
 
 // ===== CRUD OPERATIONS =====
-async function addNewIncome() {
-  const date = document.getElementById('m_date').value;
-  const desc = document.getElementById('m_desc').value || 'Sale';
-  const payment = document.getElementById('m_pay').value;
-  const amount = parseFloat(document.getElementById('m_amt').value) || 0;
-
-  const { data, error } = await supabase
-    .from('income')
-    .insert([{ date, description: desc, payment, amount }])
-    .select();
-
-  if (error) { alert('Failed to add sale'); console.error(error); }
-  else {
-    incomeRecords.unshift(data[0]);
-    renderIncome();
-    renderDashboard();
-    document.querySelector('.modal-backdrop').remove();
-  }
-}
-
-async function addNewExpense() {
-  const date = document.getElementById('m_date').value;
-  const desc = document.getElementById('m_desc').value || 'Expense';
-  const payment = document.getElementById('m_pay').value;
-  const amount = parseFloat(document.getElementById('m_amt').value) || 0;
-
-  const { data, error } = await supabase
-    .from('expenses')
-    .insert([{ date, description: desc, payment, amount }])
-    .select();
-
-  if (error) { alert('Failed to add expense'); console.error(error); }
-  else {
-    expenseRecords.unshift(data[0]);
-    renderExpenses();
-    renderDashboard();
-    document.querySelector('.modal-backdrop').remove();
-  }
-}
-
-async function saveIncome(id) {
-  const date = document.getElementById('m_date').value;
-  const desc = document.getElementById('m_desc').value;
-  const payment = document.getElementById('m_pay').value;
-  const amount = parseFloat(document.getElementById('m_amt').value) || 0;
-
-  const { error } = await supabase
-    .from('income')
-    .update({ date, description: desc, payment, amount })
-    .eq('id', id);
-
-  if (error) { alert('Failed to update'); console.error(error); }
-  else {
-    const idx = incomeRecords.findIndex(r => r.id === id);
-    if (idx !== -1) incomeRecords[idx] = { id, date, description: desc, payment, amount };
-    renderIncome();
-    renderDashboard();
-    document.querySelector('.modal-backdrop').remove();
-  }
-}
-
-async function saveExpense(id) {
-  const date = document.getElementById('m_date').value;
-  const desc = document.getElementById('m_desc').value;
-  const payment = document.getElementById('m_pay').value;
-  const amount = parseFloat(document.getElementById('m_amt').value) || 0;
-
-  const { error } = await supabase
-    .from('expenses')
-    .update({ date, description: desc, payment, amount })
-    .eq('id', id);
-
-  if (error) { alert('Failed to update'); console.error(error); }
-  else {
-    const idx = expenseRecords.findIndex(r => r.id === id);
-    if (idx !== -1) expenseRecords[idx] = { id, date, description: desc, payment, amount };
-    renderExpenses();
-    renderDashboard();
-    document.querySelector('.modal-backdrop').remove();
-  }
-}
-
 async function deleteIncome(id) {
   if (!confirm('Delete this sale?')) return;
   const { error } = await supabase.from('income').delete().eq('id', id);
@@ -784,7 +702,7 @@ function openEditIncomeModal(id) {
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
       <h3>Edit Sale</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${r.date}"></div>
       <div class="field"><label>Description</label><input id="m_desc" value="${r.description}"></div>
@@ -794,14 +712,48 @@ function openEditIncomeModal(id) {
           <option value="Transfer" ${r.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
         </select>
       </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01"></div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="saveIncome(${r.id})">Save</button>
+        <button class="btn secondary cancel-btn">Cancel</button>
+        <button class="btn save-btn">Save</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector('.close-modal').addEventListener('click', closeModal);
+  modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
+
+  modal.querySelector('.save-btn').addEventListener('click', async () => {
+    const date = modal.querySelector('#m_date').value;
+    const desc = modal.querySelector('#m_desc').value.trim();
+    const payment = modal.querySelector('#m_pay').value;
+    const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
+
+    if (!date || !desc || amount <= 0) {
+      alert('Please fill all fields with valid values.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('income')
+      .update({ date, description: desc, payment, amount })
+      .eq('id', id);
+
+    if (error) {
+      alert('Failed to update sale: ' + (error.message || 'Unknown error'));
+      console.error(error);
+    } else {
+      const idx = incomeRecords.findIndex(rec => rec.id === id);
+      if (idx !== -1) {
+        incomeRecords[idx] = { ...incomeRecords[idx], date, description: desc, payment, amount };
+      }
+      renderIncome();
+      renderDashboard();
+      closeModal();
+    }
+  });
 }
 
 function openEditExpenseModal(id) {
@@ -811,7 +763,7 @@ function openEditExpenseModal(id) {
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
       <h3>Edit Expense</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${r.date}"></div>
       <div class="field"><label>Description</label><input id="m_desc" value="${r.description}"></div>
@@ -821,37 +773,106 @@ function openEditExpenseModal(id) {
           <option value="Transfer" ${r.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
         </select>
       </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01"></div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="saveExpense(${r.id})">Save</button>
+        <button class="btn secondary cancel-btn">Cancel</button>
+        <button class="btn save-btn">Save</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector('.close-modal').addEventListener('click', closeModal);
+  modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
+
+  modal.querySelector('.save-btn').addEventListener('click', async () => {
+    const date = modal.querySelector('#m_date').value;
+    const desc = modal.querySelector('#m_desc').value.trim();
+    const payment = modal.querySelector('#m_pay').value;
+    const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
+
+    if (!date || !desc || amount <= 0) {
+      alert('Please fill all fields with valid values.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('expenses')
+      .update({ date, description: desc, payment, amount })
+      .eq('id', id);
+
+    if (error) {
+      alert('Failed to update expense: ' + (error.message || 'Unknown error'));
+      console.error(error);
+    } else {
+      const idx = expenseRecords.findIndex(rec => rec.id === id);
+      if (idx !== -1) {
+        expenseRecords[idx] = { ...expenseRecords[idx], date, description: desc, payment, amount };
+      }
+      renderExpenses();
+      renderDashboard();
+      closeModal();
+    }
+  });
 }
 
-// ===== EVENT LISTENERS =====
+// ===== EVENT LISTENERS FOR ADD MODALS =====
 document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
       <h3>Add Sale</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
       <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
       <div class="field"><label>Payment</label>
         <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
       </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="addNewIncome()">Add</button>
+        <button class="btn secondary cancel-btn">Cancel</button>
+        <button class="btn save-btn">Add</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector('.close-modal').addEventListener('click', closeModal);
+  modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
+
+  modal.querySelector('.save-btn').addEventListener('click', async () => {
+    const date = modal.querySelector('#m_date').value;
+    const desc = modal.querySelector('#m_desc').value.trim() || 'Sale';
+    const payment = modal.querySelector('#m_pay').value;
+    const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
+
+    if (!date) {
+      alert('Please select a date.');
+      return;
+    }
+    if (amount <= 0) {
+      alert('Please enter a valid amount greater than 0.');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('income')
+      .insert([{ date, description: desc, payment, amount }])
+      .select();
+
+    if (error) {
+      alert('Failed to add sale: ' + (error.message || 'Unknown error'));
+      console.error(error);
+    } else {
+      incomeRecords.unshift(data[0]);
+      renderIncome();
+      renderDashboard();
+      closeModal();
+    }
+  });
 });
 
 document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
@@ -859,21 +880,56 @@ document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
       <h3>Add Expense</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
       <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
       <div class="field"><label>Payment</label>
         <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
       </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-        <button class="btn" onclick="addNewExpense()">Add</button>
+        <button class="btn secondary cancel-btn">Cancel</button>
+        <button class="btn save-btn">Add</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector('.close-modal').addEventListener('click', closeModal);
+  modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
+
+  modal.querySelector('.save-btn').addEventListener('click', async () => {
+    const date = modal.querySelector('#m_date').value;
+    const desc = modal.querySelector('#m_desc').value.trim() || 'Expense';
+    const payment = modal.querySelector('#m_pay').value;
+    const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
+
+    if (!date) {
+      alert('Please select a date.');
+      return;
+    }
+    if (amount <= 0) {
+      alert('Please enter a valid amount greater than 0.');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert([{ date, description: desc, payment, amount }])
+      .select();
+
+    if (error) {
+      alert('Failed to add expense: ' + (error.message || 'Unknown error'));
+      console.error(error);
+    } else {
+      expenseRecords.unshift(data[0]);
+      renderExpenses();
+      renderDashboard();
+      closeModal();
+    }
+  });
 });
 
 // Export
@@ -933,4 +989,3 @@ document.querySelectorAll('.nav a').forEach(a => {
 </script>
 </body>
 </html>
-
