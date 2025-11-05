@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -378,6 +379,7 @@
         <h1 class="page-title">Sale</h1>
         <div class="controls">
           <button class="btn" id="addIncomeBtn">+ Add Sale</button>
+          <button class="btn secondary" id="deleteAllIncomeBtn">Delete All Sale</button>
           <button class="btn secondary" id="exportIncomeCsv">Export CSV</button>
           <div class="date-filters">
             <label>From: <input type="date" id="incomeFrom" /></label>
@@ -399,6 +401,7 @@
         <h1 class="page-title">Expenses</h1>
         <div class="controls">
           <button class="btn" id="addExpenseBtn">+ Add Expense</button>
+          <button class="btn secondary danger" id="deleteAllExpensesBtn">Delete All Expenses</button>
           <button class="btn secondary" id="exportExpensesCsv">Export CSV</button>
           <div class="date-filters">
             <label>From: <input type="date" id="expensesFrom" /></label>
@@ -419,10 +422,13 @@
     <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
   </div>
 
+  <!-- FORM MODAL -->
+  <div id="formModal" class="modal-backdrop" style="display:none;"></div>
+
   <!-- INVOICE MODAL -->
   <div id="invoiceModal" class="modal-backdrop" style="display:none;">
     <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="document.getElementById('invoiceModal').style.display='none'">×</button>
       <div class="invoice-header">
         <div class="invoice-title">Bloomkraft</div>
         <div>Invoice #<span id="invoiceNumber"></span></div>
@@ -445,11 +451,86 @@
 // ===== SUPABASE INIT =====
 const supabaseUrl = 'https://skejswjowceevzkloiog.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
-const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+const supabase = supabase.createClient(supabaseUrl.trim(), supabaseAnonKey.trim());
 
 // ===== UTILS =====
 function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
+}
+
+// ===== MODAL HANDLING =====
+let currentEditId = null;
+let currentTable = null;
+
+function openFormModal(table, record = null) {
+  currentTable = table;
+  const title = table === 'income' ? 'Sale' : 'Expense';
+  const modalHtml = `
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="closeModal()">×</button>
+      <h2>${record ? 'Edit ' + title : 'Add ' + title}</h2>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="formDate" value="${record?.date || new Date().toISOString().split('T')[0]}" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="formDesc" value="${record?.description || ''}" placeholder="e.g. Product sale" required />
+      </div>
+      <div class="field">
+        <label>Payment Method</label>
+        <select id="formPayment">
+          <option value="Cash" ${record?.payment === 'Cash' ? 'selected' : ''}>Cash</option>
+          <option value="Transfer" ${record?.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Amount (MVR)</label>
+        <input type="number" id="formAmount" value="${record?.amount || ''}" min="0" step="0.01" placeholder="0.00" required />
+      </div>
+      <button class="btn" onclick="saveRecord()">${record ? 'Update' : 'Save'}</button>
+    </div>
+  `;
+  document.getElementById('formModal').innerHTML = modalHtml;
+  document.getElementById('formModal').style.display = 'flex';
+  currentEditId = record?.id || null;
+}
+
+function closeModal() {
+  document.getElementById('formModal').style.display = 'none';
+  currentEditId = null;
+  currentTable = null;
+}
+
+// ===== SAVE RECORD =====
+async function saveRecord() {
+  const date = document.getElementById('formDate').value;
+  const desc = document.getElementById('formDesc').value.trim();
+  const payment = document.getElementById('formPayment').value;
+  const amount = parseFloat(document.getElementById('formAmount').value);
+
+  if (!date || !desc || !payment || isNaN(amount) || amount <= 0) {
+    alert('Please fill all fields correctly.');
+    return;
+  }
+
+  const record = { date, description: desc, payment, amount };
+
+  let error;
+  if (currentEditId) {
+    ({ error } = await supabase.from(currentTable).update(record).eq('id', currentEditId));
+  } else {
+    ({ error } = await supabase.from(currentTable).insert([record]));
+  }
+
+  if (error) {
+    console.error('Save error:', error);
+    alert('Failed to save record. Please try again.');
+    return;
+  }
+
+  closeModal();
+  refreshAll();
 }
 
 // ===== DATA FETCHING & RENDERING =====
@@ -492,11 +573,11 @@ async function renderDashboard() {
     if (summaryBarChart) summaryBarChart.destroy();
     summaryBarChart = new Chart(ctx, {
       type: 'bar',
-       {
+      data: {
         labels: ['Sale', 'Expenses'],
         datasets: [{
           label: 'Amount (MVR)',
-           [totalIncome, totalExpenses],
+          data: [totalIncome, totalExpenses],
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
           borderRadius: 6
@@ -564,7 +645,8 @@ async function renderExpenses() {
 
 // ===== INVOICE =====
 function generateInvoice(record) {
-  document.getElementById('invoiceNumber').textContent = `INV-${Date.now().toString().slice(-6)}`;
+  const invNum = `INV-${Date.now().toString().slice(-6)}`;
+  document.getElementById('invoiceNumber').textContent = invNum;
   document.getElementById('invoiceDate').textContent = record.date;
   document.getElementById('invoiceDesc').textContent = record.description;
   document.getElementById('invoicePayment').textContent = record.payment;
@@ -577,17 +659,91 @@ function generateInvoice(record) {
 
 // ===== CRUD FUNCTIONS =====
 async function deleteIncome(id) {
-  if (!confirm('Delete this sale?')) return;
+  if (!confirm('Delete this sale permanently?')) return;
   const { error } = await supabase.from('income').delete().eq('id', id);
-  if (!error) { await renderIncome(); await renderDashboard(); }
+  if (error) {
+    alert('Failed to delete.');
+    console.error(error);
+  } else {
+    refreshAll();
+  }
 }
+
 async function deleteExpense(id) {
-  if (!confirm('Delete this expense?')) return;
+  if (!confirm('Delete this expense permanently?')) return;
   const { error } = await supabase.from('expenses').delete().eq('id', id);
-  if (!error) { await renderExpenses(); await renderDashboard(); }
+  if (error) {
+    alert('Failed to delete.');
+    console.error(error);
+  } else {
+    refreshAll();
+  }
 }
-function editIncome(id) { alert('Edit Sale ID: ' + id); }
-function editExpense(id) { alert('Edit Expense ID: ' + id); }
+
+function editIncome(id) {
+  supabase.from('income').select('*').eq('id', id).then(({ data }) => {
+    if (data?.[0]) openFormModal('income', data[0]);
+  });
+}
+
+function editExpense(id) {
+  supabase.from('expenses').select('*').eq('id', id).then(({ data }) => {
+    if (data?.[0]) openFormModal('expenses', data[0]);
+  });
+}
+
+// ===== DELETE ALL =====
+async function deleteAllIncome() {
+  if (!confirm('Delete ALL sale records? This cannot be undone.')) return;
+  const { error } = await supabase.from('income').delete();
+  if (error) {
+    alert('Failed to delete all sales.');
+    console.error(error);
+  } else {
+    refreshAll();
+  }
+}
+
+async function deleteAllExpenses() {
+  if (!confirm('Delete ALL expense records? This cannot be undone.')) return;
+  const { error } = await supabase.from('expenses').delete();
+  if (error) {
+    alert('Failed to delete all expenses.');
+    console.error(error);
+  } else {
+    refreshAll();
+  }
+}
+
+// ===== CSV EXPORT =====
+function exportCsv(filename, headers, table) {
+  supabase.from(table).select('*').then(({ data }) => {
+    if (!data?.length) {
+      alert('No data to export.');
+      return;
+    }
+    const csvContent = [headers, ...data.map(r => [r.date, r.description, r.payment, r.amount])]
+      .map(row => row.map(v => v?.toString().includes(',') ? `"${v}"` : v).join(','))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }).catch(err => {
+    alert('Export failed.');
+    console.error(err);
+  });
+}
+
+// ===== REFRESH ALL VIEWS =====
+async function refreshAll() {
+  await Promise.all([renderDashboard(), renderIncome(), renderExpenses()]);
+}
 
 // ===== INIT APP ON LOAD =====
 window.addEventListener('DOMContentLoaded', async () => {
@@ -604,9 +760,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('expensesFrom').value = firstDay;
     document.getElementById('expensesTo').value = today;
 
-    await renderDashboard();
-    await renderIncome();
-    await renderExpenses();
+    await refreshAll();
 
     // Navigation
     document.querySelectorAll('.nav a').forEach(a => {
@@ -639,8 +793,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Buttons
-    document.getElementById('addIncomeBtn')?.addEventListener('click', () => alert('Add Sale'));
-    document.getElementById('addExpenseBtn')?.addEventListener('click', () => alert('Add Expense'));
+    document.getElementById('addIncomeBtn')?.addEventListener('click', () => openFormModal('income'));
+    document.getElementById('addExpenseBtn')?.addEventListener('click', () => openFormModal('expenses'));
+    document.getElementById('deleteAllIncomeBtn')?.addEventListener('click', deleteAllIncome);
+    document.getElementById('deleteAllExpensesBtn')?.addEventListener('click', deleteAllExpenses);
     document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', ['Date','Description','Payment','Amount'], 'income'));
     document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], 'expenses'));
 
@@ -649,23 +805,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     alert('Failed to load app. Please refresh.');
   }
 });
-
-// Export CSV
-function exportCsv(filename, headers, table) {
-  supabase.from(table).select('*').then(({ data }) => {
-    if (!data) return;
-    const csv = [headers, ...data.map(r => [r.date, r.description, r.payment, r.amount])]
-      .map(row => row.map(v => v?.toString().includes(',') ? `"${v}"` : v).join(','))
-      .join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
 </script>
 </body>
 </html>
