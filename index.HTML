@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bloomkraft — Business Portal (MVR)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.40.0/supabase.min.js"></script>
+  <style>
+    :root{
+      --turquoise: #2fb6ac;
+      --coral: #ff7b6b;
+      --bg: #fbfdfe;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent-text: #07303a;
+      --success: #18a39e;
+      --danger: #ff6b6b;
+      --radius: 16px;
+      --container-w: 1100px;
+      --shadow: 0 8px 24px rgba(3, 20, 24, 0.08);
+      --stat-bg: #f9fdfd;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg, #f5fbfb, #fbfdfe);
+      color: #0f1724;
+    }
+
+    .app{
+      max-width: var(--container-w);
+      margin: 24px auto;
+      background: var(--card);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: none;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      gap:24px;
+      background: linear-gradient(90deg, var(--turquoise), #37c6bf 70%);
+      color: #fff;
+      padding:20px 28px;
+    }
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      font-weight:700;
+      font-size:22px;
+      letter-spacing:0.3px;
+    }
+    .nav{
+      display:flex;
+      gap:20px;
+      margin-left:20px;
+      align-items:center;
+      font-weight:600;
+      opacity:0.95;
+    }
+    .nav a{
+      text-decoration:none;
+      color: rgba(255,255,255,0.95);
+      padding:8px 12px;
+      border-radius:10px;
+    }
+    .nav a.active{ background: rgba(255,255,255,0.15); }
+
+    .header-right{ margin-left:auto; display:flex; gap:14px; align-items:center; }
+
+    main{
+      display:flex;
+      flex-direction: column;
+      gap:28px;
+      padding:28px;
+    }
+
+    .card{
+      background: var(--card);
+      border-radius: var(--radius);
+      padding:22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .big-stats{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap:20px;
+      width:100%;
+    }
+    .stat{
+      background: var(--stat-bg);
+      padding:24px;
+      border-radius: var(--radius);
+      text-align: center;
+      border: 1px solid rgba(47,182,172,0.1);
+    }
+    .stat h4{ margin:0; color:var(--muted); font-weight:600; font-size:16px; }
+    .stat .value{ margin-top:12px; font-size:32px; font-weight:800; color:var(--accent-text); }
+
+    /* Chart container */
+    .chart-container {
+      height: 120px;
+      margin-top: 16px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+    }
+    thead th{
+      text-align:left;
+      padding:14px 12px;
+      color:var(--muted);
+      font-weight:700;
+      border-bottom: 2px solid rgba(0,0,0,0.06);
+    }
+    tbody td{
+      padding:14px 12px;
+      border-bottom: 1px solid rgba(15,23,36,0.06);
+      color:#0f1724;
+    }
+    tfoot td{
+      padding:12px 12px;
+      font-weight:700;
+      background: var(--stat-bg);
+      border-top: 2px solid rgba(0,0,0,0.08);
+    }
+
+    .page-title{
+      font-size:36px;
+      font-weight:800;
+      margin:0 0 20px 0;
+      color:var(--accent-text);
+    }
+
+    .controls{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      margin-bottom:20px;
+      flex-wrap:wrap;
+    }
+    .date-filters {
+      display: flex;
+      gap:12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .date-filters label {
+      font-weight:600;
+      color: var(--muted);
+      font-size:14px;
+      white-space: nowrap;
+    }
+    .date-filters input[type="date"] {
+      padding:8px 10px;
+      border:1px solid #ddd;
+      border-radius:8px;
+      font-size:14px;
+      background: #fff;
+      min-width: 130px;
+    }
+
+    .btn{
+      background:var(--turquoise);
+      color:#fff;
+      border:none;
+      padding:10px 16px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .btn.secondary{
+      background:#f3f6f7;
+      color: var(--accent-text);
+      border:1px solid rgba(15,23,36,0.08);
+    }
+    .btn.danger{ 
+      background:var(--coral); 
+    }
+    .btn.small {
+      padding: 7px 12px;
+      font-size: 13px;
+      border-radius:10px;
+    }
+
+    @media (max-width: 980px){
+      .app{ margin: 12px; }
+      .controls{ flex-direction: column; align-items: stretch; }
+      .date-filters{ justify-content: center; }
+    }
+
+    @media (max-width: 600px){
+      .big-stats{ grid-template-columns: 1fr; }
+      .nav{ gap:12px; font-size:14px; }
+      .logo svg{ width:28px; height:28px; }
+      .page-title{ font-size:28px; }
+      .stat .value{ font-size:26px; }
+      .date-filters{ flex-direction: column; align-items: stretch; }
+      .date-filters label{
+        display: block;
+        margin-bottom: 4px;
+      }
+    }
+
+    .modal-backdrop{
+      position:fixed; inset:0; 
+      background:rgba(4,12,17,0.4); 
+      display:flex;
+      align-items:center; 
+      justify-content:center; 
+      z-index:9999;
+    }
+    .modal{
+      width:90%;
+      max-width:420px;
+      background:var(--card);
+      padding:28px;
+      border-radius:16px;
+      box-shadow:0 20px 50px rgba(3,20,24,0.3);
+      text-align: left;
+    }
+    .modal h2, .modal h3{
+      margin-top:0; color: var(--accent-text);
+    }
+    .modal input,
+    .modal select{
+      width:100%;
+      padding:12px;
+      margin:10px 0 16px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      font-size:16px;
+    }
+    .modal .field{
+      margin-bottom:12px;
+    }
+    .modal .field label{
+      display:block;
+      font-weight:600;
+      margin-bottom:6px;
+      color: var(--accent-text);
+    }
+
+    .muted{ color:var(--muted); font-weight:600; }
+    .chip{ 
+      display:inline-flex;
+      align-items:center;
+      padding:6px 12px; 
+      border-radius:20px; 
+      font-weight:700; 
+      background:rgba(47,182,172,0.12); 
+      color:var(--turquoise);
+      font-size:14px;
+    }
+
+    .table-actions{ display:flex; gap:8px; }
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--muted);
+    }
+
+    footer{ 
+      padding:18px 28px; 
+      font-size:13px; 
+      color:var(--muted); 
+      border-top:1px solid rgba(15,23,36,0.04); 
+      text-align: center;
+    }
+
+    /* Invoice Modal */
+    #invoiceModal .modal {
+      max-width: 800px;
+      padding: 30px;
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--turquoise);
+      padding-bottom: 10px;
+    }
+    .invoice-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent-text);
+    }
+    .invoice-info {
+      margin-bottom: 20px;
+    }
+    .invoice-info div {
+      margin: 4px 0;
+    }
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .invoice-table th,
+    .invoice-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .invoice-table th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .invoice-total {
+      text-align: right;
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .invoice-footer {
+      margin-top: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="modal-backdrop">
+    <div class="modal">
+      <h2>🔐 Admin Login</h2>
+      <p>Enter your 4-digit PIN to access Bloomkraft</p>
+      <input type="password" id="loginPin" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" />
+      <div id="loginError" style="color:var(--danger); margin-top:8px; min-height:20px;"></div>
+      <button class="btn" id="loginBtn" style="width:100%;">Login</button>
+    </div>
+  </div>
+
+  <div class="app" id="mainApp" role="application" aria-label="Bloomkraft business portal">
+    <header>
+      <div class="logo" aria-hidden="true">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M2 12C2 6.48 6.48 2 12 2c0 5.52 4.48 10 10 10-5.52 0-10 4.48-10 10C6.48 22 2 17.52 2 12z" fill="#fff" opacity="0.12"></path>
+          <path d="M7.6 7.6c2.4 0 5.2 1.4 6.8 3.6 1.6 2.2 2 4.8 1.2 6.4-0.4 0.8-1 1.6-1.8 2.2-0.7-1-2-3-3.6-4.4C8.6 15.4 6.6 14 5.4 12.4 4 10.6 4 8.6 7.6 7.6z" fill="#fff"></path>
+        </svg>
+        Bloomkraft
+      </div>
+
+      <nav class="nav" role="navigation" aria-label="Main navigation">
+        <a href="#" data-page="dashboard" class="active">Dashboard</a>
+        <a href="#" data-page="income">Sale</a>
+        <a href="#" data-page="expenses">Expenses</a>
+      </nav>
+
+      <div class="header-right">
+        <div class="chip">MVR</div>
+        <div style="color:#fff; font-weight:700;">Admin</div>
+      </div>
+    </header>
+
+    <main id="content">
+
+      <!-- DASHBOARD WITH BAR CHART -->
+      <section id="page-dashboard" class="page" aria-hidden="false" style="display:block;">
+        <h1 class="page-title">Overview</h1>
+
+        <div class="controls">
+          <div class="date-filters">
+            <label>From: <input type="date" id="dashboardFrom" /></label>
+            <label>To: <input type="date" id="dashboardTo" /></label>
+            <button class="btn secondary" id="applyDashboardFilter">Apply</button>
+            <button class="btn secondary" id="clearDashboardFilter">Clear</button>
+          </div>
+        </div>
+
+        <div class="big-stats">
+          <div class="stat card">
+            <h4>Total Sale</h4>
+            <div class="value" id="totalIncomeEl">MVR 0</div>
+          </div>
+
+          <div class="stat card">
+            <h4>Total Expenses</h4>
+            <div class="value" id="totalExpensesEl">MVR 0</div>
+          </div>
+
+          <div class="stat card">
+            <h4>Net Profit</h4>
+            <div class="value" id="netProfitEl">MVR 0</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:24px;">
+          <h4 class="muted" style="margin:0 0 12px;">Summary (Bar Chart)</h4>
+          <div class="chart-container">
+            <canvas id="summaryBarChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- SALE -->
+      <section id="page-income" class="page" aria-hidden="true" style="display:none;">
+        <h1 class="page-title">Sale</h1>
+        <div class="controls">
+          <button class="btn" id="addIncomeBtn">+ Add Sale</button>
+          <button class="btn secondary" id="exportIncomeCsv">Export CSV</button>
+          <div class="date-filters">
+            <label>From: <input type="date" id="incomeFrom" /></label>
+            <label>To: <input type="date" id="incomeTo" /></label>
+            <button class="btn secondary" id="applyIncomeFilter">Apply</button>
+            <button class="btn secondary" id="clearIncomeFilter">Clear</button>
+          </div>
+        </div>
+        <div class="card">
+          <table id="incomeTable">
+            <thead><tr><th>Date</th><th>Description</th><th>Payment</th><th>Amount (MVR)</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="3"><strong>Total Sale</strong></td><td id="incomeTotalFooter">MVR 0</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </section>
+
+      <!-- EXPENSES -->
+      <section id="page-expenses" class="page" aria-hidden="true" style="display:none;">
+        <h1 class="page-title">Expenses</h1>
+        <div class="controls">
+          <button class="btn" id="addExpenseBtn">+ Add Expense</button>
+          <button class="btn secondary" id="exportExpensesCsv">Export CSV</button>
+          <div class="date-filters">
+            <label>From: <input type="date" id="expensesFrom" /></label>
+            <label>To: <input type="date" id="expensesTo" /></label>
+            <button class="btn secondary" id="applyExpensesFilter">Apply</button>
+            <button class="btn secondary" id="clearExpensesFilter">Clear</button>
+          </div>
+        </div>
+        <div class="card">
+          <table id="expensesTable">
+            <thead><tr><th>Date</th><th>Description</th><th>Payment</th><th>Amount (MVR)</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="3"><strong>Total Expenses</strong></td><td id="expensesTotalFooter">MVR 0</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
+  </div>
+
+  <!-- INVOICE MODAL (initially hidden) -->
+  <div id="invoiceModal" class="modal-backdrop" style="display:none;">
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</button>
+      <div class="invoice-header">
+        <div class="invoice-title">Bloomkraft</div>
+        <div>Invoice #<span id="invoiceNumber"></span></div>
+      </div>
+      <div class="invoice-info">
+        <div><strong>Date:</strong> <span id="invoiceDate"></span></div>
+        <div><strong>Description:</strong> <span id="invoiceDesc"></span></div>
+        <div><strong>Payment Method:</strong> <span id="invoicePayment"></span></div>
+      </div>
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount (MVR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span id="invoiceItemDesc"></span></td>
+            <td><span id="invoiceAmount"></span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="invoice-total">
+        Total: <strong><span id="invoiceTotal"></span></strong>
+      </div>
+      <div class="invoice-footer">
+        Thank you for your business!<br />
+        Currency: MVR • Bloomkraft Portal
+      </div>
+    </div>
+  </div>
+
+<script>
+// ===== SUPABASE INIT =====
+const supabaseUrl = 'https://skejswjowceevzkloiog.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
+const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+// ===== LOGIN =====
+const ADMIN_PIN = '5252';
+function checkLogin() {
+  if (sessionStorage.getItem('bloomkraft_logged_in') === 'true') {
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    return true;
+  }
+  return false;
+}
+document.getElementById('loginBtn').addEventListener('click', attemptLogin);
+document.getElementById('loginPin').addEventListener('keypress', e => { if (e.key === 'Enter') attemptLogin(); });
+function attemptLogin() {
+  const pin = document.getElementById('loginPin').value.trim();
+  const err = document.getElementById('loginError');
+  if (pin === ADMIN_PIN) {
+    sessionStorage.setItem('bloomkraft_logged_in', 'true');
+    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    init();
+  } else {
+    err.textContent = 'Incorrect PIN.';
+    document.getElementById('loginPin').value = '';
+  }
+}
+
+// ===== UTILS =====
+function formatMVR(n) {
+  return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
+}
+function isInDateRange(dateStr, { from, to }) {
+  if (!from && !to) return true;
+  const d = new Date(dateStr);
+  if (from && d < new Date(from)) return false;
+  if (to && d > new Date(to)) return false;
+  return true;
+}
+
+// ===== FETCH DATA FROM SUPABASE =====
+async function fetchRecords(table, filter = {}) {
+  let query = supabase.from(table).select('*');
+  if (filter.from || filter.to) {
+    if (filter.from) query = query.gte('date', filter.from);
+    if (filter.to) query = query.lte('date', filter.to);
+  }
+  const { data, error } = await query.order('date', { ascending: false });
+  if (error) {
+    console.error('Supabase fetch error:', error);
+    alert('Failed to load data. Check console.');
+    return [];
+  }
+  return data;
+}
+
+// ===== RENDER FUNCTIONS =====
+let summaryBarChart = null;
+async function renderDashboard() {
+  const filter = {
+    from: document.getElementById('dashboardFrom').value,
+    to: document.getElementById('dashboardTo').value
+  };
+  const [incData, expData] = await Promise.all([
+    fetchRecords('income', filter),
+    fetchRecords('expenses', filter)
+  ]);
+  const totalIncome = incData.reduce((s, r) => s + r.amount, 0);
+  const totalExpenses = expData.reduce((s, r) => s + r.amount, 0);
+  const netProfit = totalIncome - totalExpenses;
+
+  document.getElementById('totalIncomeEl').textContent = formatMVR(totalIncome);
+  document.getElementById('totalExpensesEl').textContent = formatMVR(totalExpenses);
+  const netEl = document.getElementById('netProfitEl');
+  netEl.textContent = formatMVR(netProfit);
+  netEl.style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
+
+  // Render bar chart
+  const ctx = document.getElementById('summaryBarChart')?.getContext('2d');
+  if (ctx) {
+    if (summaryBarChart) summaryBarChart.destroy();
+    summaryBarChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Sale', 'Expenses'],
+        datasets: [{
+          label: 'Amount (MVR)',
+          data: [totalIncome, totalExpenses],
+          backgroundColor: ['#2fb6ac', '#ff6b6b'],
+          borderWidth: 0,
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${formatMVR(context.parsed.y)}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: 'var(--muted)' } },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: { callback: (val) => val === 0 ? '0' : '', color: 'var(--muted)' }
+          }
+        }
+      }
+    });
+  }
+}
+
+async function renderIncome() {
+  const tbody = document.querySelector('#incomeTable tbody');
+  const filter = { from: document.getElementById('incomeFrom')?.value, to: document.getElementById('incomeTo')?.value };
+  const records = await fetchRecords('income', filter);
+  tbody.innerHTML = '';
+  if (records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No sale records</td></tr>`;
+    document.getElementById('incomeTotalFooter').textContent = 'MVR 0';
+    return;
+  }
+  records.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td>${r.description}</td>
+      <td>${r.payment}</td>
+      <td style="color:var(--success)">${formatMVR(r.amount)}</td>
+      <td class="table-actions">
+        <button class="btn small secondary" onclick="generateInvoice(${JSON.stringify(r).replace(/'/g, "\\'")})">Invoice</button>
+        <button class="btn small secondary" onclick="openEditIncomeModal(${JSON.stringify(r).replace(/'/g, "\\'")})">Edit</button>
+        <button class="btn small danger" onclick="deleteIncome('${r.id}')">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const total = records.reduce((s, r) => s + r.amount, 0);
+  document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
+}
+
+async function renderExpenses() {
+  const tbody = document.querySelector('#expensesTable tbody');
+  const filter = { from: document.getElementById('expensesFrom')?.value, to: document.getElementById('expensesTo')?.value };
+  const records = await fetchRecords('expenses', filter);
+  tbody.innerHTML = '';
+  if (records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No expense records</td></tr>`;
+    document.getElementById('expensesTotalFooter').textContent = 'MVR 0';
+    return;
+  }
+  records.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td>${r.description}</td>
+      <td>${r.payment}</td>
+      <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
+      <td class="table-actions">
+        <button class="btn small secondary" onclick="openEditExpenseModal(${JSON.stringify(r).replace(/'/g, "\\'")})">Edit</button>
+        <button class="btn small danger" onclick="deleteExpense('${r.id}')">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const total = records.reduce((s, r) => s + r.amount, 0);
+  document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
+}
+
+// ===== INVOICE =====
+function generateInvoice(record) {
+  const invoiceNum = `INV-${new Date().getTime().toString().slice(-6)}`;
+  document.getElementById('invoiceNumber').textContent = invoiceNum;
+  document.getElementById('invoiceDate').textContent = record.date;
+  document.getElementById('invoiceDesc').textContent = record.description;
+  document.getElementById('invoicePayment').textContent = record.payment;
+  document.getElementById('invoiceItemDesc').textContent = record.description;
+  document.getElementById('invoiceAmount').textContent = formatMVR(record.amount);
+  document.getElementById('invoiceTotal').textContent = formatMVR(record.amount);
+  document.getElementById('invoiceModal').style.display = 'flex';
+}
+
+// ===== CRUD OPERATIONS =====
+async function addRecord(table, record) {
+  const { error } = await supabase.from(table).insert([record]);
+  if (error) { console.error(error); alert('Save failed'); return false; }
+  return true;
+}
+async function updateRecord(table, id, record) {
+  const { error } = await supabase.from(table).update(record).eq('id', id);
+  if (error) { console.error(error); alert('Update failed'); return false; }
+  return true;
+}
+async function deleteRecord(table, id) {
+  const { error } = await supabase.from(table).delete().eq('id', id);
+  if (error) { console.error(error); alert('Delete failed'); return false; }
+  return true;
+}
+
+// ===== MODAL & ACTIONS =====
+function openEditIncomeModal(r) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-backdrop';
+  modal.innerHTML = `
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <h3>Edit Sale</h3>
+      <div class="field"><label>Date</label><input type="date" id="m_date" value="${r.date}"></div>
+      <div class="field"><label>Description</label><input id="m_desc" value="${r.description}"></div>
+      <div class="field"><label>Payment</label>
+        <select id="m_pay">
+          <option value="Cash" ${r.payment === 'Cash' ? 'selected' : ''}>Cash</option>
+          <option value="Transfer" ${r.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
+        </select>
+      </div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+        <button class="btn" onclick="saveIncome('${r.id}')">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+async function saveIncome(id) {
+  const record = {
+    date: document.getElementById('m_date').value,
+    description: document.getElementById('m_desc').value,
+    payment: document.getElementById('m_pay').value,
+    amount: parseFloat(document.getElementById('m_amt').value) || 0
+  };
+  if (await updateRecord('income', id, record)) {
+    renderIncome();
+    renderDashboard();
+    document.querySelector('.modal-backdrop').remove();
+  }
+}
+async function deleteIncome(id) {
+  if (confirm('Delete this sale?')) {
+    if (await deleteRecord('income', id)) {
+      renderIncome();
+      renderDashboard();
+    }
+  }
+}
+
+function openEditExpenseModal(r) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-backdrop';
+  modal.innerHTML = `
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <h3>Edit Expense</h3>
+      <div class="field"><label>Date</label><input type="date" id="m_date" value="${r.date}"></div>
+      <div class="field"><label>Description</label><input id="m_desc" value="${r.description}"></div>
+      <div class="field"><label>Payment</label>
+        <select id="m_pay">
+          <option value="Cash" ${r.payment === 'Cash' ? 'selected' : ''}>Cash</option>
+          <option value="Transfer" ${r.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
+        </select>
+      </div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+        <button class="btn" onclick="saveExpense('${r.id}')">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+async function saveExpense(id) {
+  const record = {
+    date: document.getElementById('m_date').value,
+    description: document.getElementById('m_desc').value,
+    payment: document.getElementById('m_pay').value,
+    amount: parseFloat(document.getElementById('m_amt').value) || 0
+  };
+  if (await updateRecord('expenses', id, record)) {
+    renderExpenses();
+    renderDashboard();
+    document.querySelector('.modal-backdrop').remove();
+  }
+}
+async function deleteExpense(id) {
+  if (confirm('Delete this expense?')) {
+    if (await deleteRecord('expenses', id)) {
+      renderExpenses();
+      renderDashboard();
+    }
+  }
+}
+
+// ===== ADD NEW RECORDS =====
+document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
+  const modal = document.createElement('div');
+  modal.className = 'modal-backdrop';
+  modal.innerHTML = `
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <h3>Add Sale</h3>
+      <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
+      <div class="field"><label>Payment</label>
+        <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
+      </div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+        <button class="btn" onclick="addNewIncome()">Add</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+});
+async function addNewIncome() {
+  const record = {
+    date: document.getElementById('m_date').value,
+    description: document.getElementById('m_desc').value || 'Sale',
+    payment: document.getElementById('m_pay').value,
+    amount: parseFloat(document.getElementById('m_amt').value) || 0
+  };
+  if (await addRecord('income', record)) {
+    renderIncome();
+    renderDashboard();
+    document.querySelector('.modal-backdrop').remove();
+  }
+}
+
+document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
+  const modal = document.createElement('div');
+  modal.className = 'modal-backdrop';
+  modal.innerHTML = `
+    <div class="modal">
+      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">✕</button>
+      <h3>Add Expense</h3>
+      <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
+      <div class="field"><label>Payment</label>
+        <select id="m_pay"><option>Cash</option><option>Transfer</option></select>
+      </div>
+      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+        <button class="btn secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+        <button class="btn" onclick="addNewExpense()">Add</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+});
+async function addNewExpense() {
+  const record = {
+    date: document.getElementById('m_date').value,
+    description: document.getElementById('m_desc').value || 'Expense',
+    payment: document.getElementById('m_pay').value,
+    amount: parseFloat(document.getElementById('m_amt').value) || 0
+  };
+  if (await addRecord('expenses', record)) {
+    renderExpenses();
+    renderDashboard();
+    document.querySelector('.modal-backdrop').remove();
+  }
+}
+
+// ===== EXPORT CSV =====
+async function exportCsv(filename, headers, table) {
+  const { data } = await supabase.from(table).select('*').order('date', { ascending: true });
+  const csv = [headers, ...data.map(r => [r.date, r.description, r.payment, r.amount])]
+    .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', ['Date','Description','Payment','Amount'], 'income'));
+document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], 'expenses'));
+
+// ===== Navigation =====
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    const page = a.dataset.page;
+    document.querySelectorAll('.page').forEach(sec => {
+      sec.style.display = sec.id === `page-${page}` ? 'block' : 'none';
+    });
+  });
+});
+
+// ===== Filters =====
+['dashboard','income','expenses'].forEach(p => {
+  const applyBtn = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
+  const clearBtn = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
+  if (applyBtn) applyBtn.addEventListener('click', () => {
+    if(p==='dashboard') renderDashboard();
+    else if(p==='income') renderIncome();
+    else renderExpenses();
+  });
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    document.getElementById(`${p}From`).value = '';
+    document.getElementById(`${p}To`).value = '';
+    if(p==='dashboard') renderDashboard();
+    else if(p==='income') renderIncome();
+    else renderExpenses();
+  });
+});
+
+// INIT
+async function init() {
+  await renderDashboard();
+  await renderIncome();
+  await renderExpenses();
+}
+if (!checkLogin()) {
+  document.getElementById('loginModal').style.display = 'flex';
+}
+</script>
+</body>
+</html>
