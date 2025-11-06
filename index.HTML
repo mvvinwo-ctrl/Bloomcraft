@@ -1,1399 +1,31 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bloomkraft — Business Portal (MVR)</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <style>
-    :root{
-      --turquoise: #2fb6ac;
-      --coral: #ff7b6b;
-      --bg: #fbfdfe;
-      --card: #ffffff;
-      --muted: #6b7280;
-      --accent-text: #07303a;
-      --success: #18a39e;
-      --danger: #ff6b6b;
-      --radius: 16px;
-      --container-w: 1100px;
-      --shadow: 0 8px 24px rgba(3, 20, 24, 0.08);
-      --stat-bg: #f9fdfd;
-      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-
-    html,body{
-      height:100%;
-      margin:0;
-      background: linear-gradient(180deg, #f5fbfb, #fbfdfe);
-      color: #0f1724;
-      overflow-x: hidden;
-    }
-
-    .app{
-      max-width: var(--container-w);
-      margin: 0 auto;
-      background: var(--card);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      width: 100%;
-      padding: 0;
-    }
-
-    header{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      background: linear-gradient(90deg, var(--turquoise), #37c6bf 70%);
-      color: #fff;
-      padding:12px 16px;
-      flex-wrap: wrap;
-      justify-content: space-between;
-    }
-    .logo{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:700;
-      font-size:18px;
-      letter-spacing:0.3px;
-    }
-    .nav{
-      display:flex;
-      gap:8px;
-      margin-left:12px;
-      align-items:center;
-      font-weight:600;
-      opacity:0.95;
-      flex-wrap: wrap;
-    }
-    .nav a{
-      text-decoration:none;
-      color: rgba(255,255,255,0.95);
-      padding:6px 10px;
-      border-radius:8px;
-      font-size:14px;
-      white-space: nowrap;
-    }
-    .nav a.active{ 
-      background: rgba(255,255,255,0.15); 
-      border-radius: 20px;
-    }
-
-    main{
-      display:flex;
-      flex-direction: column;
-      gap:16px;
-      padding:16px;
-      width: 100%;
-    }
-
-    .card{
-      background: var(--card);
-      border-radius: var(--radius);
-      padding:16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-      border: 1px solid rgba(0,0,0,0.03);
-      width: 100%;
-    }
-
-    .big-stats{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap:12px;
-      width: 100%;
-    }
-    .stat{
-      background: var(--stat-bg);
-      padding:16px;
-      border-radius: var(--radius);
-      text-align: center;
-      border: 1px solid rgba(47,182,172,0.1);
-    }
-    .stat h4{ 
-      margin:0; 
-      color:var(--muted); 
-      font-weight:600; 
-      font-size:14px;
-      line-height: 1.4;
-    }
-    .stat .value{ 
-      margin-top:8px; 
-      font-size:24px; 
-      font-weight:800; 
-      color:var(--accent-text); 
-      word-wrap: break-word;
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:14px;
-      overflow-x: auto;
-    }
-    thead th{
-      text-align:left;
-      padding:10px 8px;
-      color:var(--muted);
-      font-weight:700;
-      border-bottom: 2px solid rgba(0,0,0,0.06);
-      white-space: nowrap;
-      min-width: 80px;
-    }
-    tbody td{
-      padding:10px 8px;
-      border-bottom: 1px solid rgba(15,23,36,0.06);
-      color:#0f1724;
-      word-wrap: break-word;
-    }
-    tfoot td{
-      padding:8px 8px;
-      font-weight:700;
-      background: var(--stat-bg);
-      border-top: 2px solid rgba(0,0,0,0.08);
-    }
-
-    .page-title{
-      font-size:28px;
-      font-weight:800;
-      margin:0 0 16px 0;
-      color:var(--accent-text);
-      word-wrap: break-word;
-    }
-
-    .controls{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      margin-bottom:16px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    .date-filters {
-      display: flex;
-      gap:8px;
-      align-items: center;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    .date-filters label {
-      font-weight:600;
-      color: var(--muted);
-      font-size:13px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .date-filters input[type="date"] {
-      padding:6px 8px;
-      border:1px solid #ddd;
-      border-radius:6px;
-      font-size:13px;
-      background: #fff;
-      min-width: 100px;
-      width: 100%;
-      max-width: 130px;
-    }
-    .date-filters button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 8px;
-      min-width: 80px;
-      width: 100%;
-      max-width: 120px;
-      text-align: center;
-    }
-
-    .btn{
-      background:var(--turquoise);
-      color:#fff;
-      border:none;
-      padding:8px 12px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:700;
-      white-space:nowrap;
-      font-size:14px;
-      min-width: 80px;
-      text-align: center;
-    }
-    .btn.secondary{
-      background:#f3f6f7;
-      color: var(--accent-text);
-      border:1px solid rgba(15,23,36,0.08);
-    }
-    .btn.danger{ 
-      background:var(--coral); 
-    }
-    .btn.small {
-      padding: 6px 10px;
-      font-size: 12px;
-      border-radius:8px;
-      min-width: auto;
-    }
-
-    /* Mobile-specific styles */
-    @media (max-width: 980px){
-      .app{ 
-        margin: 0; 
-        padding: 0;
-      }
-      .controls{ 
-        flex-direction: column; 
-        align-items: stretch; 
-        gap: 8px;
-      }
-      .date-filters{ 
-        justify-content: center; 
-        width: 100%;
-      }
-      .nav a{
-        padding: 6px 8px;
-        font-size: 13px;
-      }
-      .logo{
-        font-size: 16px;
-      }
-    }
-
-    @media (max-width: 600px){
-      .big-stats{ 
-        grid-template-columns: 1fr; 
-        gap: 12px;
-      }
-      .nav{ 
-        gap:8px; 
-        font-size:12px; 
-      }
-      .logo svg{ 
-        width:24px; 
-        height:24px; 
-      }
-      .page-title{ 
-        font-size:24px; 
-        margin-bottom: 12px;
-      }
-      .stat .value{ 
-        font-size:20px; 
-      }
-      .date-filters{ 
-        flex-direction: column; 
-        align-items: stretch; 
-        gap: 8px;
-      }
-      .date-filters label{
-        display: block;
-        margin-bottom: 4px;
-        font-size: 12px;
-      }
-      .date-filters input[type="date"] {
-        min-width: 100%;
-        max-width: 100%;
-        width: 100%;
-      }
-      .btn{
-        padding: 8px 10px;
-        font-size: 13px;
-      }
-      .btn.small {
-        padding: 5px 8px;
-        font-size: 11px;
-      }
-      .table-actions{
-        flex-direction: column;
-        gap: 4px;
-      }
-      .chart-container {
-        height: 100px;
-      }
-      .nav {
-        gap: 4px;
-        padding: 4px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 12px;
-      }
-      .nav a {
-        padding: 4px 8px;
-        font-size: 12px;
-        border-radius: 8px;
-      }
-    }
-
-    /* Fix for table on mobile */
-    @media (max-width: 480px) {
-      .controls {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .date-filters {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .nav {
-        gap: 4px;
-        padding: 4px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 12px;
-      }
-      .nav a {
-        padding: 4px 8px;
-        font-size: 12px;
-        border-radius: 8px;
-      }
-      .page-title {
-        font-size: 22px;
-        margin-bottom: 12px;
-      }
-      .stat .value {
-        font-size: 18px;
-      }
-      .btn {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-      .btn.small {
-        padding: 4px 8px;
-        font-size: 10px;
-      }
-      
-      /* Make table more mobile-friendly */
-      table {
-        font-size: 12px;
-        min-width: 100%;
-      }
-      thead th {
-        padding: 8px 6px;
-        font-size: 12px;
-        min-width: 60px;
-      }
-      tbody td {
-        padding: 8px 6px;
-        font-size: 12px;
-      }
-      .table-actions {
-        display: flex;
-        gap: 4px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .table-actions button {
-        padding: 4px 6px;
-        font-size: 10px;
-        min-width: 40px;
-        width: auto;
-      }
-      
-      /* Improve date filter on small screens */
-      .date-filters {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      .date-filters .filter-group {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        width: 100%;
-        flex-wrap: wrap;
-      }
-      .date-filters label {
-        font-size: 12px;
-        margin: 0;
-        padding: 0;
-      }
-      .date-filters input[type="date"] {
-        width: 100%;
-        max-width: 100%;
-        min-width: 100px;
-        padding: 6px 8px;
-        font-size: 12px;
-      }
-      .date-filters button {
-        width: 100%;
-        max-width: 100%;
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-    }
-
-    .modal-backdrop{
-      position:fixed; 
-      inset:0; 
-      background:rgba(4,12,17,0.4); 
-      display:flex;
-      align-items:center; 
-      justify-content:center; 
-      z-index:9999;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .modal{
-      width:90%;
-      max-width:420px;
-      background:var(--card);
-      padding:20px;
-      border-radius:16px;
-      box-shadow:0 20px 50px rgba(3,20,24,0.3);
-      text-align: left;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal h2, .modal h3{
-      margin-top:0; 
-      color: var(--accent-text);
-      font-size: 20px;
-    }
-    .modal input,
-    .modal select{
-      width:100%;
-      padding:10px;
-      margin:8px 0 12px;
-      border:1px solid #ddd;
-      border-radius:8px;
-      font-size:14px;
-    }
-    .modal .field{
-      margin-bottom:10px;
-    }
-    .modal .field label{
-      display:block;
-      font-weight:600;
-      margin-bottom:4px;
-      color: var(--accent-text);
-      font-size: 14px;
-    }
-
-    .muted{ 
-      color:var(--muted); 
-      font-weight:600; 
-      font-size: 14px;
-    }
-    .chip{ 
-      display:inline-flex;
-      align-items:center;
-      padding:4px 8px; 
-      border-radius:16px; 
-      font-weight:700; 
-      background:rgba(47,182,172,0.12); 
-      color:var(--turquoise);
-      font-size:12px;
-    }
-
-    .table-actions{ 
-      display:flex; 
-      gap:4px; 
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    footer{ 
-      padding:12px 20px; 
-      font-size:12px; 
-      color:var(--muted); 
-      border-top:1px solid rgba(15,23,36,0.04); 
-      text-align: center;
-      width: 100%;
-    }
-
-    #invoiceModal .modal {
-      max-width: 800px;
-      padding: 20px;
-    }
-    .invoice-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      border-bottom: 2px solid var(--turquoise);
-      padding-bottom: 8px;
-    }
-    .invoice-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--accent-text);
-    }
-    .invoice-info {
-      margin-bottom: 16px;
-    }
-    .invoice-info div {
-      margin: 4px 0;
-      font-size: 14px;
-    }
-    .invoice-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    .invoice-table th,
-    .invoice-table td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    .invoice-table th {
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .invoice-total {
-      text-align: right;
-      margin-top: 16px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .invoice-footer {
-      margin-top: 20px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* Ensure table is scrollable on mobile */
-    .table-container {
-      overflow-x: auto;
-      width: 100%;
-    }
-
-    /* Fix for button click issues on mobile */
-    .btn, .table-actions button {
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-
-    /* Center dashboard chart */
-    .chart-container {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .chart-container canvas {
-      max-width: 100%;
-      height: auto !important;
-    }
-
-    /* Improve table header visibility on mobile */
-    @media (max-width: 480px) {
-      thead th {
-        min-width: 60px;
-        font-size: 12px;
-        padding: 6px 4px;
-      }
-      .table-actions {
-        justify-content: center;
-        gap: 2px;
-      }
-      .table-actions button {
-        padding: 4px 6px;
-        font-size: 10px;
-        min-width: 40px;
-        width: auto;
-        white-space: nowrap;
-      }
-      /* Make sure actions column doesn't get cut off */
-      table {
-        table-layout: fixed;
-      }
-      thead th:last-child, tbody td:last-child {
-        width: 80px;
-        min-width: 80px;
-      }
-    }
-
-    /* Fix for edit/delete buttons being cut off */
-    @media (max-width: 480px) {
-      .table-actions {
-        display: flex;
-        flex-direction: row;
-        gap: 2px;
-        flex-wrap: nowrap;
-        justify-content: center;
-      }
-      .table-actions button {
-        padding: 4px 6px;
-        font-size: 10px;
-        min-width: 40px;
-        width: auto;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-    }
-
-    /* Improved date filter styling */
-    .date-filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    
-    .date-filter-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-    
-    .date-filter-label {
-      font-weight: 600;
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-    
-    .date-filter-input {
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 13px;
-      background: #fff;
-      min-width: 100px;
-      width: 100%;
-      max-width: 130px;
-    }
-    
-    .date-filter-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    
-    .date-filter-button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 8px;
-      min-width: 80px;
-      width: 100%;
-      max-width: 120px;
-      text-align: center;
-    }
-
-    /* Enhanced responsive design for all components */
-    @media (max-width: 768px) {
-      .controls {
-        flex-direction: column;
-        gap: 12px;
-      }
-      
-      .date-filters {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      
-      .date-filter-group {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      
-      .date-filter-item {
-        flex-direction: column;
-        gap: 4px;
-        width: 100%;
-      }
-      
-      .date-filter-label {
-        font-size: 12px;
-        margin-bottom: 4px;
-      }
-      
-      .date-filter-input {
-        width: 100%;
-        max-width: 100%;
-        min-width: 100px;
-      }
-      
-      .date-filter-buttons {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      
-      .date-filter-button {
-        width: 100%;
-        max-width: 100%;
-        padding: 8px 12px;
-        font-size: 14px;
-      }
-    }
-
-    /* Fixed chart container for better responsiveness */
-    .dashboard-chart-container {
-      width: 100%;
-      height: 300px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 16px;
-    }
-    
-    .dashboard-chart {
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-    }
-
-    /* Better spacing for mobile */
-    @media (max-width: 576px) {
-      .card {
-        padding: 12px;
-      }
-      
-      .stat {
-        padding: 12px;
-      }
-      
-      .stat h4 {
-        font-size: 12px;
-      }
-      
-      .stat .value {
-        font-size: 18px;
-      }
-      
-      .page-title {
-        font-size: 22px;
-        margin-bottom: 12px;
-      }
-      
-      .controls {
-        gap: 8px;
-      }
-      
-      .btn {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-      
-      .btn.small {
-        padding: 4px 8px;
-        font-size: 10px;
-      }
-    }
-
-    /* Improved table layout for small screens */
-    @media (max-width: 480px) {
-      .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      
-      table {
-        min-width: 600px;
-        font-size: 12px;
-      }
-      
-      thead th {
-        padding: 6px 4px;
-        font-size: 11px;
-        min-width: 60px;
-      }
-      
-      tbody td {
-        padding: 6px 4px;
-        font-size: 11px;
-        word-break: break-word;
-      }
-      
-      .table-actions {
-        gap: 2px;
-        flex-wrap: nowrap;
-        justify-content: center;
-      }
-      
-      .table-actions button {
-        padding: 4px 6px;
-        font-size: 10px;
-        min-width: 40px;
-        width: auto;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-    }
-
-    /* Fix for edit/delete buttons not working */
-    .table-actions button {
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .table-actions button:hover {
-      opacity: 0.9;
-    }
-    
-    .table-actions button:active {
-      transform: scale(0.98);
-    }
-
-    /* Add some spacing between sections */
-    .section-spacing {
-      margin-bottom: 24px;
-    }
-
-    /* Improved modal styling */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(4, 12, 17, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    
-    .modal {
-      width: 90%;
-      max-width: 420px;
-      background: var(--card);
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(3, 20, 24, 0.3);
-      text-align: left;
-      max-height: 90vh;
-      overflow-y: auto;
-      animation: fadeIn 0.3s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Improved invoice modal */
-    #invoiceModal .modal {
-      max-width: 800px;
-      padding: 20px;
-      animation: fadeIn 0.3s ease-out;
-    }
-    
-    .invoice-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      border-bottom: 2px solid var(--turquoise);
-      padding-bottom: 8px;
-    }
-    
-    .invoice-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--accent-text);
-    }
-    
-    .invoice-info {
-      margin-bottom: 16px;
-    }
-    
-    .invoice-info div {
-      margin: 4px 0;
-      font-size: 14px;
-    }
-    
-    .invoice-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    
-    .invoice-table th,
-    .invoice-table td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    
-    .invoice-table th {
-      color: var(--muted);
-      font-weight: 600;
-    }
-    
-    .invoice-total {
-      text-align: right;
-      margin-top: 16px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-    
-    .invoice-footer {
-      margin-top: 20px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* Fix for date filters in all sections */
-    .date-filter-section {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      width: 100%;
-    }
-    
-    .date-filter-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    
-    .date-filter-field {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-    
-    .date-filter-label {
-      font-weight: 600;
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-    
-    .date-filter-input {
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 13px;
-      background: #fff;
-      min-width: 100px;
-      width: 100%;
-      max-width: 130px;
-    }
-    
-    .date-filter-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-    
-    .date-filter-button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 8px;
-      min-width: 80px;
-      width: 100%;
-      max-width: 120px;
-      text-align: center;
-    }
-
-    /* Responsive improvements for all sections */
-    @media (max-width: 768px) {
-      .date-filter-section {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      
-      .date-filter-row {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      
-      .date-filter-field {
-        flex-direction: column;
-        gap: 4px;
-        width: 100%;
-      }
-      
-      .date-filter-label {
-        font-size: 12px;
-        margin-bottom: 4px;
-      }
-      
-      .date-filter-input {
-        width: 100%;
-        max-width: 100%;
-        min-width: 100px;
-      }
-      
-      .date-filter-buttons {
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-      }
-      
-      .date-filter-button {
-        width: 100%;
-        max-width: 100%;
-        padding: 8px 12px;
-        font-size: 14px;
-      }
-    }
-
-    /* Final fixes for all issues */
-    .chart-container {
-      width: 100%;
-      height: 300px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 16px;
-    }
-    
-    .chart-container canvas {
-      max-width: 100%;
-      height: auto !important;
-      width: 100% !important;
-    }
-
-    /* Ensure all buttons are clickable */
-    .btn, .table-actions button {
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      user-select: none;
-    }
-
-    /* Improve accessibility */
-    .btn:focus, .table-actions button:focus {
-      outline: 2px solid var(--turquoise);
-      outline-offset: 2px;
-    }
-
-    /* Fix for edit/delete buttons */
-    .edit-btn, .delete-btn {
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .edit-btn:hover, .delete-btn:hover {
-      opacity: 0.9;
-    }
-    
-    .edit-btn:active, .delete-btn:active {
-      transform: scale(0.98);
-    }
-
-    /* Better table layout for mobile */
-    @media (max-width: 480px) {
-      .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      
-      table {
-        min-width: 600px;
-        font-size: 12px;
-      }
-      
-      thead th {
-        padding: 6px 4px;
-        font-size: 11px;
-        min-width: 60px;
-      }
-      
-      tbody td {
-        padding: 6px 4px;
-        font-size: 11px;
-        word-break: break-word;
-      }
-      
-      .table-actions {
-        gap: 2px;
-        flex-wrap: nowrap;
-        justify-content: center;
-      }
-      
-      .table-actions button {
-        padding: 4px 6px;
-        font-size: 10px;
-        min-width: 40px;
-        width: auto;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-    }
-
-    /* Final responsive design adjustments */
-    @media (max-width: 375px) {
-      .app {
-        margin: 0;
-        padding: 0;
-      }
-      
-      .card {
-        padding: 12px;
-      }
-      
-      .stat {
-        padding: 12px;
-      }
-      
-      .stat h4 {
-        font-size: 12px;
-      }
-      
-      .stat .value {
-        font-size: 16px;
-      }
-      
-      .page-title {
-        font-size: 20px;
-        margin-bottom: 12px;
-      }
-      
-      .controls {
-        gap: 8px;
-      }
-      
-      .btn {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
-      
-      .btn.small {
-        padding: 4px 8px;
-        font-size: 10px;
-      }
-      
-      .date-filter-input {
-        font-size: 12px;
-        padding: 6px 8px;
-      }
-      
-      .date-filter-button {
-        font-size: 12px;
-        padding: 6px 10px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="app" id="mainApp" role="application" aria-label="Bloomkraft business portal">
-    <header>
-      <div class="logo" aria-hidden="true">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M2 12C2 6.48 6.48 2 12 2c0 5.52 4.48 10 10 10-5.52 0-10 4.48-10 10C6.48 22 2 17.52 2 12z" fill="#fff" opacity="0.12"></path>
-          <path d="M7.6 7.6c2.4 0 5.2 1.4 6.8 3.6 1.6 2.2 2 4.8 1.2 6.4-0.4 0.8-1 1.6-1.8 2.2-0.7-1-2-3-3.6-4.4C8.6 15.4 6.6 14 5.4 12.4 4 10.6 4 8.6 7.6 7.6z" fill="#fff"></path>
-        </svg>
-        Bloomkraft
-      </div>
-
-      <nav class="nav" role="navigation" aria-label="Main navigation">
-        <a href="#" data-page="dashboard" class="active">Dashboard</a>
-        <a href="#" data-page="income">Sale</a>
-        <a href="#" data-page="expenses">Expenses</a>
-      </nav>
-    </header>
-
-    <main id="content">
-
-      <!-- DASHBOARD -->
-      <section id="page-dashboard" class="page" aria-hidden="false" style="display:block;">
-        <h1 class="page-title">Overview</h1>
-
-        <div class="controls">
-          <div class="date-filter-section">
-            <div class="date-filter-row">
-              <div class="date-filter-field">
-                <label class="date-filter-label">From:</label>
-                <input type="date" id="dashboardFrom" class="date-filter-input" />
-              </div>
-              <div class="date-filter-field">
-                <label class="date-filter-label">To:</label>
-                <input type="date" id="dashboardTo" class="date-filter-input" />
-              </div>
-            </div>
-            <div class="date-filter-buttons">
-              <button class="btn secondary date-filter-button" id="applyDashboardFilter">Apply</button>
-              <button class="btn secondary date-filter-button" id="clearDashboardFilter">Clear</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="big-stats">
-          <div class="stat card">
-            <h4>Total Sale</h4>
-            <div class="value" id="totalIncomeEl">MVR 0</div>
-          </div>
-
-          <div class="stat card">
-            <h4>Total Expenses</h4>
-            <div class="value" id="totalExpensesEl">MVR 0</div>
-          </div>
-
-          <div class="stat card">
-            <h4>Net Profit</h4>
-            <div class="value" id="netProfitEl">MVR 0</div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:24px;">
-          <h4 class="muted" style="margin:0 0 12px;">Summary (Bar Chart)</h4>
-          <div class="dashboard-chart-container">
-            <canvas id="summaryBarChart" class="dashboard-chart"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- SALE -->
-      <section id="page-income" class="page" aria-hidden="true" style="display:none;">
-        <h1 class="page-title">Sale</h1>
-        <div class="controls">
-          <button class="btn" id="addIncomeBtn">+ Add Sale</button>
-          <button class="btn secondary" id="exportIncomeCsv">Export CSV</button>
-          <div class="date-filter-section">
-            <div class="date-filter-row">
-              <div class="date-filter-field">
-                <label class="date-filter-label">From:</label>
-                <input type="date" id="incomeFrom" class="date-filter-input" />
-              </div>
-              <div class="date-filter-field">
-                <label class="date-filter-label">To:</label>
-                <input type="date" id="incomeTo" class="date-filter-input" />
-              </div>
-            </div>
-            <div class="date-filter-buttons">
-              <button class="btn secondary date-filter-button" id="applyIncomeFilter">Apply</button>
-              <button class="btn secondary date-filter-button" id="clearIncomeFilter">Clear</button>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="table-container">
-            <table id="incomeTable">
-              <thead><tr><th>Date</th><th>Description</th><th>Payment</th><th>Amount (MVR)</th><th>Actions</th></tr></thead>
-              <tbody></tbody>
-              <tfoot><tr><td colspan="3"><strong>Total Sale</strong></td><td id="incomeTotalFooter">MVR 0</td><td></td></tr></tfoot>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- EXPENSES -->
-      <section id="page-expenses" class="page" aria-hidden="true" style="display:none;">
-        <h1 class="page-title">Expenses</h1>
-        <div class="controls">
-          <button class="btn" id="addExpenseBtn">+ Add Expense</button>
-          <button class="btn secondary" id="exportExpensesCsv">Export CSV</button>
-          <div class="date-filter-section">
-            <div class="date-filter-row">
-              <div class="date-filter-field">
-                <label class="date-filter-label">From:</label>
-                <input type="date" id="expensesFrom" class="date-filter-input" />
-              </div>
-              <div class="date-filter-field">
-                <label class="date-filter-label">To:</label>
-                <input type="date" id="expensesTo" class="date-filter-input" />
-              </div>
-            </div>
-            <div class="date-filter-buttons">
-              <button class="btn secondary date-filter-button" id="applyExpensesFilter">Apply</button>
-              <button class="btn secondary date-filter-button" id="clearExpensesFilter">Clear</button>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="table-container">
-            <table id="expensesTable">
-              <thead><tr><th>Date</th><th>Description</th><th>Payment</th><th>Amount (MVR)</th><th>Actions</th></tr></thead>
-              <tbody></tbody>
-              <tfoot><tr><td colspan="3"><strong>Total Expenses</strong></td><td id="expensesTotalFooter">MVR 0</td><td></td></tr></tfoot>
-            </table>
-          </div>
-        </div>
-      </section>
-
-    </main>
-
-    <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
-  </div>
-
-  <!-- INVOICE MODAL -->
-  <div id="invoiceModal" class="modal-backdrop" style="display:none;">
-    <div class="modal">
-      <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="document.getElementById('invoiceModal').style.display='none'">×</button>
-      <div class="invoice-header">
-        <div class="invoice-title">Bloomkraft</div>
-        <div>Invoice #<span id="invoiceNumber"></span></div>
-      </div>
-      <div class="invoice-info">
-        <div><strong>Date:</strong> <span id="invoiceDate"></span></div>
-        <div><strong>Description:</strong> <span id="invoiceDesc"></span></div>
-        <div><strong>Payment Method:</strong> <span id="invoicePayment"></span></div>
-      </div>
-      <table class="invoice-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount (MVR)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span id="invoiceItemDesc"></span></td>
-            <td><span id="invoiceAmount"></span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="invoice-total">
-        Total: <strong><span id="invoiceTotal"></span></strong>
-      </div>
-      <div class="invoice-footer">
-        Thank you for your business!<br />
-        Currency: MVR • Bloomkraft Portal
-      </div>
-    </div>
-  </div>
-
 <script type="module">
 // ===== SUPABASE INIT =====
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm';
-
-// 🔑 REPLACE WITH YOUR SUPABASE PROJECT CREDENTIALS (spaces removed!)
 const supabaseUrl = 'https://skejswjowceevzkloiog.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// ===== DATA =====
 let incomeRecords = [];
 let expenseRecords = [];
 
-// Fetch records from Supabase
+// Fetch records
 async function fetchRecords() {
-  const { data: incData, error: incErr } = await supabase
-    .from('income')
-    .select('*')
-    .order('date', { ascending: false });
-  if (incErr) console.error('Income fetch error:', incErr);
-  else incomeRecords = incData || [];
-
-  const { data: expData, error: expErr } = await supabase
-    .from('expenses')
-    .select('*')
-    .order('date', { ascending: false });
-  if (expErr) console.error('Expenses fetch error:', expErr);
-  else expenseRecords = expData || [];
+  const [incRes, expRes] = await Promise.all([
+    supabase.from('income').select('*').order('date', { ascending: false }),
+    supabase.from('expenses').select('*').order('date', { ascending: false })
+  ]);
+  if (incRes.error) console.error('Income fetch error:', incRes.error);
+  else incomeRecords = incRes.data || [];
+  if (expRes.error) console.error('Expenses fetch error:', expRes.error);
+  else expenseRecords = expRes.data || [];
 }
 
-// ===== UTILS =====
+// Format MVR
 function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
+
+// Date filter
 function isInDateRange(dateStr, { from, to }) {
   if (!from && !to) return true;
   const d = new Date(dateStr);
@@ -1402,8 +34,8 @@ function isInDateRange(dateStr, { from, to }) {
   return true;
 }
 
-// ===== TOTALSE =====
-function computeTotals(filter = { from: '', to: '' }) {
+// Compute totals
+function computeTotals(filter = {}) {
   const inc = incomeRecords.filter(r => isInDateRange(r.date, filter));
   const exp = expenseRecords.filter(r => isInDateRange(r.date, filter));
   const totalIncome = inc.reduce((s, r) => s + r.amount, 0);
@@ -1411,7 +43,7 @@ function computeTotals(filter = { from: '', to: '' }) {
   return { totalIncome, totalExpenses, netProfit: totalIncome - totalExpenses };
 }
 
-// ===== DASHBOARD WITH BAR CHART =====
+// Dashboard chart
 let summaryBarChart = null;
 function renderDashboard() {
   const filter = {
@@ -1419,9 +51,10 @@ function renderDashboard() {
     to: document.getElementById('dashboardTo').value
   };
   const { totalIncome, totalExpenses, netProfit } = computeTotals(filter);
-  
   document.getElementById('totalIncomeEl').textContent = formatMVR(totalIncome);
-  document.getElementById('totalExpensesEl').textContent = formatMVR(totalExpenses);
+  const expEl = document.getElementById('totalExpensesEl');
+  expEl.textContent = formatMVR(totalExpenses);
+  expEl.style.color = 'var(--danger)'; // 🔴 Always red for expenses per your preference
   const netEl = document.getElementById('netProfitEl');
   netEl.textContent = formatMVR(netProfit);
   netEl.style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
@@ -1438,8 +71,7 @@ function renderDashboard() {
           data: [totalIncome, totalExpenses],
           backgroundColor: ['#2fb6ac', '#ff6b6b'],
           borderWidth: 0,
-          borderRadius: 6,
-          borderSkipped: false
+          borderRadius: 6
         }]
       },
       options: {
@@ -1449,68 +81,75 @@ function renderDashboard() {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatMVR(context.parsed.y)}`
+              label: (ctx) => `${ctx.dataset.label}: ${formatMVR(ctx.parsed.y)}`
             }
           }
         },
         scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: 'var(--muted)', font: { size: 12 } }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: {
-              callback: (val) => val === 0 ? '0' : '',
-              color: 'var(--muted)',
-              font: { size: 10 }
-            }
-          }
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } }
         }
       }
     });
   }
 }
 
-// ===== RENDER TABLES =====
+// Render income table
 function renderIncome() {
   const tbody = document.querySelector('#incomeTable tbody');
-  const filter = { 
-    from: document.getElementById('incomeFrom')?.value, 
-    to: document.getElementById('incomeTo')?.value 
+  const filter = {
+    from: document.getElementById('incomeFrom')?.value,
+    to: document.getElementById('incomeTo')?.value
   };
   const filtered = incomeRecords.filter(r => isInDateRange(r.date, filter));
-  tbody.innerHTML = '';
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No sale records</td></tr>`;
-    document.getElementById('incomeTotalFooter').textContent = 'MVR 0';
-    return;
-  }
-  filtered.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${r.description}</td>
-      <td>${r.payment}</td>
-      <td style="color:var(--success)">${formatMVR(r.amount)}</td>
-      <td class="table-actions">
-        <button class="btn small secondary" onclick="generateInvoice(${r.id})">Invoice</button>
-        <button class="btn small secondary edit-btn" onclick="openEditIncomeModal(${r.id})">Edit</button>
-        <button class="btn small danger delete-btn" onclick="deleteIncome(${r.id})">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
+  tbody.innerHTML = filtered.length
+    ? filtered.map(r => `
+        <tr data-id="${r.id}" data-type="income">
+          <td>${r.date}</td>
+          <td>${r.description}</td>
+          <td>${r.payment}</td>
+          <td style="color:var(--success)">${formatMVR(r.amount)}</td>
+          <td class="table-actions">
+            <button class="btn small secondary invoice-btn" data-id="${r.id}">Invoice</button>
+            <button class="btn small secondary edit-btn" data-id="${r.id}">Edit</button>
+            <button class="btn small danger delete-btn" data-id="${r.id}">Delete</button>
+          </td>
+        </tr>`).join('')
+    : `<tr><td colspan="5" class="empty-state">No sale records</td></tr>`;
   const total = filtered.reduce((s, r) => s + r.amount, 0);
   document.getElementById('incomeTotalFooter').textContent = formatMVR(total);
 }
 
+// Render expenses table
+function renderExpenses() {
+  const tbody = document.querySelector('#expensesTable tbody');
+  const filter = {
+    from: document.getElementById('expensesFrom')?.value,
+    to: document.getElementById('expensesTo')?.value
+  };
+  const filtered = expenseRecords.filter(r => isInDateRange(r.date, filter));
+  tbody.innerHTML = filtered.length
+    ? filtered.map(r => `
+        <tr data-id="${r.id}" data-type="expense">
+          <td>${r.date}</td>
+          <td>${r.description}</td>
+          <td>${r.payment}</td>
+          <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
+          <td class="table-actions">
+            <button class="btn small secondary edit-btn" data-id="${r.id}">Edit</button>
+            <button class="btn small danger delete-btn" data-id="${r.id}">Delete</button>
+          </td>
+        </tr>`).join('')
+    : `<tr><td colspan="5" class="empty-state">No expense records</td></tr>`;
+  const total = filtered.reduce((s, r) => s + r.amount, 0);
+  document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
+}
+
+// Generate invoice
 function generateInvoice(id) {
   const r = incomeRecords.find(rec => rec.id === id);
   if (!r) return;
   const invoiceNum = `INV-${new Date().getTime().toString().slice(-6)}`;
-
   document.getElementById('invoiceNumber').textContent = invoiceNum;
   document.getElementById('invoiceDate').textContent = r.date;
   document.getElementById('invoiceDesc').textContent = r.description;
@@ -1518,135 +157,39 @@ function generateInvoice(id) {
   document.getElementById('invoiceItemDesc').textContent = r.description;
   document.getElementById('invoiceAmount').textContent = formatMVR(r.amount);
   document.getElementById('invoiceTotal').textContent = formatMVR(r.amount);
-
   document.getElementById('invoiceModal').style.display = 'flex';
 }
 
-function renderExpenses() {
-  const tbody = document.querySelector('#expensesTable tbody');
-  const filter = { 
-    from: document.getElementById('expensesFrom')?.value, 
-    to: document.getElementById('expensesTo')?.value 
-  };
-  const filtered = expenseRecords.filter(r => isInDateRange(r.date, filter));
-  tbody.innerHTML = '';
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No expense records</td></tr>`;
-    document.getElementById('expensesTotalFooter').textContent = 'MVR 0';
-    return;
-  }
-  filtered.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${r.description}</td>
-      <td>${r.payment}</td>
-      <td style="color:var(--danger)">${formatMVR(r.amount)}</td>
-      <td class="table-actions">
-        <button class="btn small secondary edit-btn" onclick="openEditExpenseModal(${r.id})">Edit</button>
-        <button class="btn small danger delete-btn" onclick="deleteExpense(${r.id})">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-  const total = filtered.reduce((s, r) => s + r.amount, 0);
-  document.getElementById('expensesTotalFooter').textContent = formatMVR(total);
-}
-
-// ===== CRUD OPERATIONS =====
-async function deleteIncome(id) {
-  if (!confirm('Delete this sale?')) return;
-  const { error } = await supabase.from('income').delete().eq('id', id);
+// Delete record
+async function deleteRecord(id, type) {
+  if (!confirm(`Delete this ${type}?`)) return;
+  const table = type === 'income' ? 'income' : 'expenses';
+  const { error } = await supabase.from(table).delete().eq('id', id);
   if (error) { alert('Failed to delete'); console.error(error); }
   else {
-    incomeRecords = incomeRecords.filter(r => r.id !== id);
-    renderIncome();
-    renderDashboard();
-  }
-}
-
-async function deleteExpense(id) {
-  if (!confirm('Delete this expense?')) return;
-  const { error } = await supabase.from('expenses').delete().eq('id', id);
-  if (error) { alert('Failed to delete'); console.error(error); }
-  else {
-    expenseRecords = expenseRecords.filter(r => r.id !== id);
-    renderExpenses();
-    renderDashboard();
-  }
-}
-
-// ===== MODAL HELPERS =====
-function openEditIncomeModal(id) {
-  const r = incomeRecords.find(rec => rec.id === id);
-  if (!r) return;
-  const modal = document.createElement('div');
-  modal.className = 'modal-backdrop';
-  modal.innerHTML = `
-    <div class="modal">
-      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
-      <h3>Edit Sale</h3>
-      <div class="field"><label>Date</label><input type="date" id="m_date" value="${r.date}"></div>
-      <div class="field"><label>Description</label><input id="m_desc" value="${r.description}"></div>
-      <div class="field"><label>Payment</label>
-        <select id="m_pay">
-          <option value="Cash" ${r.payment === 'Cash' ? 'selected' : ''}>Cash</option>
-          <option value="Transfer" ${r.payment === 'Transfer' ? 'selected' : ''}>Transfer</option>
-        </select>
-      </div>
-      <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01" min="0"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-        <button class="btn secondary cancel-btn">Cancel</button>
-        <button class="btn save-btn">Save</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  const closeModal = () => modal.remove();
-  modal.querySelector('.close-modal').addEventListener('click', closeModal);
-  modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
-
-  modal.querySelector('.save-btn').addEventListener('click', async () => {
-    const date = modal.querySelector('#m_date').value;
-    const desc = modal.querySelector('#m_desc').value.trim();
-    const payment = modal.querySelector('#m_pay').value;
-    const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
-
-    if (!date || !desc || amount <= 0) {
-      alert('Please fill all fields with valid values.');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('income')
-      .update({ date, description: desc, payment, amount })
-      .eq('id', id);
-
-    if (error) {
-      alert('Failed to update sale: ' + (error.message || 'Unknown error'));
-      console.error(error);
-    } else {
-      const idx = incomeRecords.findIndex(rec => rec.id === id);
-      if (idx !== -1) {
-        incomeRecords[idx] = { ...incomeRecords[idx], date, description: desc, payment, amount };
-      }
+    if (type === 'income') {
+      incomeRecords = incomeRecords.filter(r => r.id !== id);
       renderIncome();
-      renderDashboard();
-      closeModal();
+    } else {
+      expenseRecords = expenseRecords.filter(r => r.id !== id);
+      renderExpenses();
     }
-  });
+    renderDashboard();
+  }
 }
 
-function openEditExpenseModal(id) {
-  const r = expenseRecords.find(rec => rec.id === id);
+// Open edit modal (reusable)
+function openEditModal(id, type) {
+  const records = type === 'income' ? incomeRecords : expenseRecords;
+  const r = records.find(rec => rec.id === id);
   if (!r) return;
+
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
-      <h3>Edit Expense</h3>
+      <button class="close-modal">×</button>
+      <h3>Edit ${type === 'income' ? 'Sale' : 'Expense'}</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${r.date}"></div>
       <div class="field"><label>Description</label><input id="m_desc" value="${r.description}"></div>
       <div class="field"><label>Payment</label>
@@ -1658,7 +201,7 @@ function openEditExpenseModal(id) {
       <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="${r.amount}" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
         <button class="btn secondary cancel-btn">Cancel</button>
-        <button class="btn save-btn">Save</button>
+        <button class="btn save-btn" data-id="${id}" data-type="${type}">Save</button>
       </div>
     </div>
   `;
@@ -1667,45 +210,61 @@ function openEditExpenseModal(id) {
   const closeModal = () => modal.remove();
   modal.querySelector('.close-modal').addEventListener('click', closeModal);
   modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
-
-  modal.querySelector('.save-btn').addEventListener('click', async () => {
+  modal.querySelector('.save-btn').addEventListener('click', async (e) => {
+    const btn = e.target;
+    const id = btn.dataset.id;
+    const type = btn.dataset.type;
+    const table = type === 'income' ? 'income' : 'expenses';
     const date = modal.querySelector('#m_date').value;
     const desc = modal.querySelector('#m_desc').value.trim();
     const payment = modal.querySelector('#m_pay').value;
     const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
-
     if (!date || !desc || amount <= 0) {
       alert('Please fill all fields with valid values.');
       return;
     }
-
     const { error } = await supabase
-      .from('expenses')
+      .from(table)
       .update({ date, description: desc, payment, amount })
       .eq('id', id);
-
     if (error) {
-      alert('Failed to update expense: ' + (error.message || 'Unknown error'));
+      alert('Failed to update: ' + (error.message || 'Unknown error'));
       console.error(error);
     } else {
-      const idx = expenseRecords.findIndex(rec => rec.id === id);
-      if (idx !== -1) {
-        expenseRecords[idx] = { ...expenseRecords[idx], date, description: desc, payment, amount };
-      }
-      renderExpenses();
+      const arr = type === 'income' ? incomeRecords : expenseRecords;
+      const idx = arr.findIndex(rec => rec.id === id);
+      if (idx !== -1) arr[idx] = { ...arr[idx], date, description: desc, payment, amount };
+      if (type === 'income') renderIncome(); else renderExpenses();
       renderDashboard();
       closeModal();
     }
   });
 }
 
-// ===== EVENT LISTENERS FOR ADD MODALS =====
+// Delegated event listener for actions (critical for mobile reliability)
+document.getElementById('content').addEventListener('click', (e) => {
+  const btn = e.target.closest('.invoice-btn, .edit-btn, .delete-btn');
+  if (!btn) return;
+  const id = parseInt(btn.dataset.id);
+  const row = btn.closest('tr');
+  const type = row ? row.dataset.type : 'income';
+
+  if (btn.classList.contains('invoice-btn')) {
+    generateInvoice(id);
+  } else if (btn.classList.contains('edit-btn')) {
+    openEditModal(id, type);
+  } else if (btn.classList.contains('delete-btn')) {
+    deleteRecord(id, type);
+  }
+});
+
+// Add income modal
 document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      <button class="close-modal">×</button>
       <h3>Add Sale</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
       <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Product Sale"></div>
@@ -1715,54 +274,33 @@ document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
       <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
         <button class="btn secondary cancel-btn">Cancel</button>
-        <button class="btn save-btn">Add</button>
+        <button class="btn save-new" data-type="income">Add</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
-
   const closeModal = () => modal.remove();
   modal.querySelector('.close-modal').addEventListener('click', closeModal);
   modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
-
-  modal.querySelector('.save-btn').addEventListener('click', async () => {
+  modal.querySelector('.save-new').addEventListener('click', async () => {
     const date = modal.querySelector('#m_date').value;
     const desc = modal.querySelector('#m_desc').value.trim() || 'Sale';
     const payment = modal.querySelector('#m_pay').value;
     const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
-
-    if (!date) {
-      alert('Please select a date.');
-      return;
-    }
-    if (amount <= 0) {
-      alert('Please enter a valid amount greater than 0.');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('income')
-      .insert([{ date, description: desc, payment, amount }])
-      .select();
-
-    if (error) {
-      alert('Failed to add sale: ' + (error.message || 'Unknown error'));
-      console.error(error);
-    } else {
-      incomeRecords.unshift(data[0]);
-      renderIncome();
-      renderDashboard();
-      closeModal();
-    }
+    if (!date || amount <= 0) { alert('Invalid input'); return; }
+    const { data, error } = await supabase.from('income').insert([{ date, description: desc, payment, amount }]).select();
+    if (error) { alert('Failed: ' + error.message); console.error(error); }
+    else { incomeRecords.unshift(data[0]); renderIncome(); renderDashboard(); closeModal(); }
   });
 });
 
+// Add expense modal
 document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
   modal.innerHTML = `
     <div class="modal">
-      <button class="close-modal" style="float:right; background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      <button class="close-modal">×</button>
       <h3>Add Expense</h3>
       <div class="field"><label>Date</label><input type="date" id="m_date" value="${new Date().toISOString().slice(0,10)}"></div>
       <div class="field"><label>Description</label><input id="m_desc" placeholder="e.g. Office Supplies"></div>
@@ -1772,63 +310,43 @@ document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
       <div class="field"><label>Amount (MVR)</label><input type="number" id="m_amt" value="0" step="0.01" min="0"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
         <button class="btn secondary cancel-btn">Cancel</button>
-        <button class="btn save-btn">Add</button>
+        <button class="btn save-new" data-type="expense">Add</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
-
   const closeModal = () => modal.remove();
   modal.querySelector('.close-modal').addEventListener('click', closeModal);
   modal.querySelector('.cancel-btn').addEventListener('click', closeModal);
-
-  modal.querySelector('.save-btn').addEventListener('click', async () => {
+  modal.querySelector('.save-new').addEventListener('click', async () => {
     const date = modal.querySelector('#m_date').value;
     const desc = modal.querySelector('#m_desc').value.trim() || 'Expense';
     const payment = modal.querySelector('#m_pay').value;
     const amount = parseFloat(modal.querySelector('#m_amt').value) || 0;
-
-    if (!date) {
-      alert('Please select a date.');
-      return;
-    }
-    if (amount <= 0) {
-      alert('Please enter a valid amount greater than 0.');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('expenses')
-      .insert([{ date, description: desc, payment, amount }])
-      .select();
-
-    if (error) {
-      alert('Failed to add expense: ' + (error.message || 'Unknown error'));
-      console.error(error);
-    } else {
-      expenseRecords.unshift(data[0]);
-      renderExpenses();
-      renderDashboard();
-      closeModal();
-    }
+    if (!date || amount <= 0) { alert('Invalid input'); return; }
+    const { data, error } = await supabase.from('expenses').insert([{ date, description: desc, payment, amount }]).select();
+    if (error) { alert('Failed: ' + error.message); console.error(error); }
+    else { expenseRecords.unshift(data[0]); renderExpenses(); renderDashboard(); closeModal(); }
   });
 });
 
-// Export
-function exportCsv(filename, headers, records) {
+// Export CSV
+function exportCsv(filename, records) {
+  if (!records.length) { alert('No data to export'); return; }
+  const headers = ['Date','Description','Payment','Amount'];
   const csv = [headers, ...records.map(r => [r.date, r.description, r.payment, r.amount])]
-    .map(row => row.map(String).map(cell => cell.includes(',') ? `"${cell}"` : cell).join(','))
+    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
     .join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
+  const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', ['Date','Description','Payment','Amount'], incomeRecords));
-document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', ['Date','Description','Payment','Amount'], expenseRecords));
+document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', incomeRecords));
+document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', expenseRecords));
 
 // Navigation
 document.querySelectorAll('.nav a').forEach(a => {
@@ -1843,25 +361,27 @@ document.querySelectorAll('.nav a').forEach(a => {
   });
 });
 
-// Filters
+// Filter handlers
 ['dashboard','income','expenses'].forEach(p => {
-  const applyBtn = document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
-  const clearBtn = document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`);
-  if (applyBtn) applyBtn.addEventListener('click', () => {
-    if(p==='dashboard') renderDashboard();
-    else if(p==='income') renderIncome();
-    else renderExpenses();
+  const prefix = p.charAt(0).toUpperCase() + p.slice(1);
+  document.getElementById(`apply${prefix}Filter`)?.addEventListener('click', () => {
+    p === 'dashboard' ? renderDashboard() : (p === 'income' ? renderIncome() : renderExpenses());
   });
-  if (clearBtn) clearBtn.addEventListener('click', () => {
+  document.getElementById(`clear${prefix}Filter`)?.addEventListener('click', () => {
     document.getElementById(`${p}From`).value = '';
     document.getElementById(`${p}To`).value = '';
-    if(p==='dashboard') renderDashboard();
-    else if(p==='income') renderIncome();
-    else renderExpenses();
+    p === 'dashboard' ? renderDashboard() : (p === 'income' ? renderIncome() : renderExpenses());
   });
 });
 
-// INIT
+// Close invoice modal on click outside
+document.getElementById('invoiceModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('invoiceModal')) {
+    document.getElementById('invoiceModal').style.display = 'none';
+  }
+});
+
+// Init
 (async () => {
   await fetchRecords();
   renderDashboard();
@@ -1869,6 +389,3 @@ document.querySelectorAll('.nav a').forEach(a => {
   renderExpenses();
 })();
 </script>
-</body>
-</html>
-
