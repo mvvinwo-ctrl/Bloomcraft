@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Funded Pass Nuvi – $10 Start</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Bloomkraft — Business Portal (MVR)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root{
@@ -32,10 +32,10 @@
       max-width: var(--container-w);
       margin: 0 auto;
       background: var(--card);
-      border-radius: 20px;
+      border-radius: 0px; /* Full-width mobile */
       box-shadow: var(--shadow);
       overflow: hidden;
-      width: 100%;
+      width: 100vw;
       padding: 0;
     }
     header{
@@ -47,6 +47,8 @@
       padding:12px 16px;
       flex-wrap: wrap;
       justify-content: space-between;
+      position: relative;
+      z-index: 100;
     }
     .logo{
       display:flex;
@@ -83,6 +85,7 @@
       gap:16px;
       padding:16px;
       width: 100%;
+      box-sizing: border-box;
     }
     .card{
       background: var(--card);
@@ -91,10 +94,11 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.04);
       border: 1px solid rgba(0,0,0,0.03);
       width: 100%;
+      box-sizing: border-box;
     }
     .big-stats{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap:12px;
       width: 100%;
     }
@@ -114,7 +118,7 @@
     }
     .stat .value{ 
       margin-top:8px; 
-      font-size:24px; 
+      font-size:22px;
       font-weight:800; 
       color:var(--accent-text); 
       word-wrap: break-word;
@@ -123,7 +127,6 @@
       width:100%;
       border-collapse:collapse;
       font-size:14px;
-      overflow-x: auto;
     }
     thead th{
       text-align:left;
@@ -132,7 +135,6 @@
       font-weight:700;
       border-bottom: 2px solid rgba(0,0,0,0.06);
       white-space: nowrap;
-      min-width: 80px;
     }
     tbody td{
       padding:10px 8px;
@@ -147,7 +149,7 @@
       border-top: 2px solid rgba(0,0,0,0.08);
     }
     .page-title{
-      font-size:28px;
+      font-size:26px;
       font-weight:800;
       margin:0 0 16px 0;
       color:var(--accent-text);
@@ -173,17 +175,16 @@
       color: var(--muted);
       font-size:13px;
       white-space: nowrap;
-      flex-shrink: 0;
     }
     .date-filters input[type="date"] {
-      padding:6px 8px;
+      padding:8px 10px;
       border:1px solid #ddd;
-      border-radius:6px;
-      font-size:13px;
+      border-radius:8px;
+      font-size:14px;
       background: #fff;
-      min-width: 100px;
+      min-width: 120px;
       width: 100%;
-      max-width: 130px;
+      max-width: 140px;
     }
     .date-filters button {
       padding: 8px 12px;
@@ -198,7 +199,7 @@
       background:var(--turquoise);
       color:#fff;
       border:none;
-      padding:8px 12px;
+      padding:10px 14px;
       border-radius:10px;
       cursor:pointer;
       font-weight:700;
@@ -206,6 +207,8 @@
       font-size:14px;
       min-width: 80px;
       text-align: center;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     .btn.secondary{
       background:#f3f6f7;
@@ -216,41 +219,83 @@
       background:var(--coral); 
     }
     .btn.small {
-      padding: 6px 10px;
-      font-size: 12px;
+      padding: 7px 12px;
+      font-size: 13px;
       border-radius:8px;
       min-width: auto;
     }
-    @media (max-width: 980px){
-      .app{ margin: 0; padding: 0; }
-      .controls{ flex-direction: column; align-items: stretch; gap: 8px; }
-      .date-filters{ justify-content: center; width: 100%; }
-      .nav a{ padding: 6px 8px; font-size: 13px; }
-      .logo{ font-size: 16px; }
-    }
-    @media (max-width: 600px){
-      .big-stats{ grid-template-columns: 1fr; gap: 12px; }
-      .nav{ gap:8px; font-size:12px; }
-      .logo svg{ width:24px; height:24px; }
-      .page-title{ font-size:24px; margin-bottom: 12px; }
-      .stat .value{ font-size:20px; }
-      .date-filters{ flex-direction: column; align-items: stretch; gap: 8px; }
-      .date-filters label{ display: block; margin-bottom: 4px; font-size: 12px; }
-      .date-filters input[type="date"]{ min-width: 100%; max-width: 100%; width: 100%; }
-      .btn{ padding: 8px 10px; font-size: 13px; }
-      .btn.small{ padding: 5px 8px; font-size: 11px; }
-      .table-actions{ flex-direction: column; gap: 4px; }
-      .chart-container{ height: 100px; }
+    /* MOBILE OPTIMIZED */
+    @media (max-width: 768px){
+      .app {
+        border-radius: 0 !important;
+        margin: 0 !important;
+      }
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .date-filters {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      .date-filters input[type="date"] {
+        min-width: 100%;
+        max-width: 100%;
+      }
+      .nav {
+        gap: 6px;
+        font-size: 13px;
+      }
+      .big-stats {
+        grid-template-columns: 1fr;
+      }
+      table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .table-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: nowrap;
+        justify-content: center;
+        min-width: 200px;
+      }
+      .table-actions button {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 60px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .card {
+        padding: 14px;
+      }
     }
     @media (max-width: 480px){
-      table{ font-size: 12px; min-width: 600px; }
-      thead th{ padding: 8px 6px; font-size: 12px; min-width: 60px; }
-      tbody td{ padding: 8px 6px; font-size: 12px; }
-      .table-actions{ display: flex; gap: 2px; flex-wrap: nowrap; justify-content: center; }
-      .table-actions button{ padding: 4px 6px; font-size: 10px; min-width: 40px; white-space: nowrap; flex-shrink: 0; }
-      .date-filters{ flex-direction: column; gap: 8px; width: 100%; }
-      .date-filters input[type="date"]{ width: 100%; }
-      .btn{ padding: 6px 10px; font-size: 12px; }
+      .logo {
+        font-size: 16px;
+      }
+      .page-title {
+        font-size: 22px;
+      }
+      .stat .value {
+        font-size: 20px;
+      }
+      .btn {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      .btn.small {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+      .table-actions button {
+        padding: 5px 8px;
+        font-size: 11px;
+        min-width: 55px;
+      }
     }
     .modal-backdrop{
       position:fixed; 
@@ -261,23 +306,15 @@
       justify-content:center; 
       z-index:9999;
       padding: 20px;
-      overflow-y: auto;
     }
     .modal{
       width:90%;
-      max-width:420px;
+      max-width:400px;
       background:var(--card);
       padding:20px;
       border-radius:16px;
       box-shadow:0 20px 50px rgba(3,20,24,0.3);
       text-align: left;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal h2, .modal h3{
-      margin-top:0; 
-      color: var(--accent-text);
-      font-size: 20px;
     }
     .modal input,
     .modal select{
@@ -296,44 +333,102 @@
       font-weight:600;
       margin-bottom:4px;
       color: var(--accent-text);
+    }
+    .muted{ color:var(--muted); font-weight:600; }
+    .table-actions{ display:flex; gap:6px; flex-wrap: wrap; justify-content: center; }
+    .empty-state { text-align: center; padding: 20px; color: var(--muted); }
+    footer{ 
+      padding:12px 20px; 
+      font-size:12px; 
+      color:var(--muted); 
+      border-top:1px solid rgba(15,23,36,0.04); 
+      text-align: center;
+      width: 100%;
+    }
+    #invoiceModal .modal {
+      max-width: 700px;
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--turquoise);
+    }
+    .invoice-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-text);
+    }
+    .invoice-info div {
+      margin: 4px 0;
       font-size: 14px;
     }
-    .muted{ color:var(--muted); font-weight:600; font-size: 14px; }
-    .chip{ display:inline-flex; align-items:center; padding:4px 8px; border-radius:16px; font-weight:700; background:rgba(47,182,172,0.12); color:var(--turquoise); font-size:12px; }
-    .table-actions{ display:flex; gap:4px; flex-wrap: wrap; justify-content: center; }
-    .empty-state{ text-align: center; padding: 20px; color: var(--muted); font-size: 14px; }
-    footer{ padding:12px 20px; font-size:12px; color:var(--muted); border-top:1px solid rgba(15,23,36,0.04); text-align: center; }
-    #invoiceModal .modal{ max-width: 800px; padding: 20px; }
-    .invoice-header{ display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 2px solid var(--turquoise); padding-bottom: 8px; }
-    .invoice-title{ font-size: 24px; font-weight: 800; color: var(--accent-text); }
-    .invoice-info div{ margin: 4px 0; font-size: 14px; }
-    .invoice-table{ width:100%; border-collapse: collapse; margin-top:16px; }
-    .invoice-table th, .invoice-table td{ padding:8px; text-align:left; border-bottom:1px solid #eee; font-size:14px; }
-    .invoice-table th{ color: var(--muted); font-weight:600; }
-    .invoice-total{ text-align: right; margin-top:16px; font-size:18px; font-weight:700; }
-    .invoice-footer{ margin-top:20px; text-align:center; color:var(--muted); font-size:12px; }
-    .table-container{ overflow-x: auto; width: 100%; }
-    .btn, .table-actions button{
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .invoice-table th,
+    .invoice-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .invoice-table th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .invoice-total {
+      text-align: right;
+      margin-top: 16px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Ensure no horizontal scroll on mobile */
+    body {
+      overflow-x: hidden;
+    }
+    .app {
+      overflow: hidden;
+    }
+    /* Button reliability fix */
+    .btn, .table-actions button {
+      cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
-      cursor: pointer;
       user-select: none;
     }
-    .dashboard-chart-container{ width:100%; height:300px; display:flex; justify-content:center; align-items:center; margin-top:16px; }
-    .dashboard-chart{ width:100%; height:100%; max-width:100%; max-height:100%; }
+    .dashboard-chart-container {
+      width: 100%;
+      height: 280px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 16px;
+    }
+    .dashboard-chart {
+      width: 100% !important;
+      height: 100% !important;
+    }
   </style>
 </head>
 <body>
-  <div class="app" id="mainApp" role="application">
+  <div class="app" id="mainApp">
     <header>
-      <div class="logo" aria-hidden="true">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
           <path d="M2 12C2 6.48 6.48 2 12 2c0 5.52 4.48 10 10 10-5.52 0-10 4.48-10 10C6.48 22 2 17.52 2 12z" fill="#fff" opacity="0.12"></path>
           <path d="M7.6 7.6c2.4 0 5.2 1.4 6.8 3.6 1.6 2.2 2 4.8 1.2 6.4-0.4 0.8-1 1.6-1.8 2.2-0.7-1-2-3-3.6-4.4C8.6 15.4 6.6 14 5.4 12.4 4 10.6 4 8.6 7.6 7.6z" fill="#fff"></path>
         </svg>
-        Funded Pass Nuvi – $10 Start
+        Bloomkraft
       </div>
-      <nav class="nav" role="navigation">
+      <nav class="nav">
         <a href="#" data-page="dashboard" class="active">Dashboard</a>
         <a href="#" data-page="income">Sale</a>
         <a href="#" data-page="expenses">Expenses</a>
@@ -416,14 +511,14 @@
         </div>
       </section>
     </main>
-    <footer>Funded Pass Nuvi – $10 Start • Currency: MVR</footer>
+    <footer>Bloomkraft • Business Portal — Currency: MVR</footer>
 
     <!-- INVOICE MODAL -->
     <div id="invoiceModal" class="modal-backdrop" style="display:none;">
       <div class="modal">
         <button style="float:right; background:none; border:none; font-size:20px; cursor:pointer;" onclick="document.getElementById('invoiceModal').style.display='none'">×</button>
         <div class="invoice-header">
-          <div class="invoice-title">Funded Pass Nuvi</div>
+          <div class="invoice-title">Bloomkraft</div>
           <div>Invoice #<span id="invoiceNumber"></span></div>
         </div>
         <div class="invoice-info">
@@ -441,7 +536,6 @@
     </div>
 
 <script type="module">
-// ===== SUPABASE INIT =====
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm';
 const supabaseUrl = 'https://skejswjowceevzkloiog.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrZWpzd2pvd2NlZXZ6a2xvaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDg0NDYsImV4cCI6MjA3NjYyNDQ0Nn0.Q9LSKeEkOO7FZv3SOKvJa8efksRfGFYrvZDKlQmKTqk';
@@ -463,11 +557,11 @@ function formatMVR(n) {
   return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' MVR';
 }
 
-function isInDateRange(dateStr, { from, to }) {
-  if (!from && !to) return true;
+function isInDateRange(dateStr, filter) {
+  if (!filter.from && !filter.to) return true;
   const d = new Date(dateStr);
-  if (from && d < new Date(from)) return false;
-  if (to && d > new Date(to)) return false;
+  if (filter.from && d < new Date(filter.from)) return false;
+  if (filter.to && d > new Date(filter.to)) return false;
   return true;
 }
 
@@ -481,15 +575,10 @@ function computeTotals(filter = {}) {
 
 let summaryBarChart = null;
 function renderDashboard() {
-  const filter = {
-    from: document.getElementById('dashboardFrom').value,
-    to: document.getElementById('dashboardTo').value
-  };
+  const filter = { from: document.getElementById('dashboardFrom').value, to: document.getElementById('dashboardTo').value };
   const { totalIncome, totalExpenses, netProfit } = computeTotals(filter);
   document.getElementById('totalIncomeEl').textContent = formatMVR(totalIncome);
-  const expEl = document.getElementById('totalExpensesEl');
-  expEl.textContent = formatMVR(totalExpenses);
-  expEl.style.color = 'var(--danger)';
+  document.getElementById('totalExpensesEl').textContent = formatMVR(totalExpenses);
   const netEl = document.getElementById('netProfitEl');
   netEl.textContent = formatMVR(netProfit);
   netEl.style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
@@ -501,12 +590,7 @@ function renderDashboard() {
       type: 'bar',
       data: {
         labels: ['Sale', 'Expenses'],
-        datasets: [{
-          data: [totalIncome, totalExpenses],
-          backgroundColor: ['#2fb6ac', '#ff6b6b'],
-          borderWidth: 0,
-          borderRadius: 6
-        }]
+        datasets: [{ data: [totalIncome, totalExpenses], backgroundColor: ['#2fb6ac', '#ff6b6b'], borderWidth: 0, borderRadius: 6 }]
       },
       options: {
         responsive: true,
@@ -627,7 +711,6 @@ function openEditModal(id, type) {
     const btn = e.target;
     const id = btn.dataset.id;
     const type = btn.dataset.type;
-    const table = type === 'income' ? 'income' : 'expenses';
     const date = modal.querySelector('#m_date').value;
     const desc = modal.querySelector('#m_desc').value.trim();
     const payment = modal.querySelector('#m_pay').value;
@@ -636,7 +719,7 @@ function openEditModal(id, type) {
       alert('Please fill all fields with valid values.');
       return;
     }
-    const { error } = await supabase.from(table).update({ date, description: desc, payment, amount }).eq('id', id);
+    const { error } = await supabase.from(type === 'income' ? 'income' : 'expenses').update({ date, description: desc, payment, amount }).eq('id', id);
     if (!error) {
       const arr = type === 'income' ? incomeRecords : expenseRecords;
       const idx = arr.findIndex(rec => rec.id === id);
@@ -648,20 +731,19 @@ function openEditModal(id, type) {
   });
 }
 
-// DELEGATED EVENT LISTENER (✅ fixes mobile button issues)
+// ✅ DELEGATED EVENT HANDLER (FIXES MOBILE BUTTONS)
 document.getElementById('content').addEventListener('click', (e) => {
   const btn = e.target.closest('.invoice-btn, .edit-btn, .delete-btn');
   if (!btn) return;
   const id = parseInt(btn.dataset.id);
   const row = btn.closest('tr');
   const type = row.dataset.type;
-
   if (btn.classList.contains('invoice-btn')) generateInvoice(id);
   else if (btn.classList.contains('edit-btn')) openEditModal(id, type);
   else if (btn.classList.contains('delete-btn')) deleteRecord(id, type);
 });
 
-// ADD MODALS
+// ADD INCOME
 document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
@@ -695,6 +777,7 @@ document.getElementById('addIncomeBtn')?.addEventListener('click', () => {
   });
 });
 
+// ADD EXPENSE
 document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
   const modal = document.createElement('div');
   modal.className = 'modal-backdrop';
@@ -728,7 +811,7 @@ document.getElementById('addExpenseBtn')?.addEventListener('click', () => {
   });
 });
 
-// EXPORT CSV
+// EXPORT
 function exportCsv(filename, records) {
   if (!records.length) return alert('No data');
   const headers = ['Date','Description','Payment','Amount'];
@@ -743,7 +826,7 @@ function exportCsv(filename, records) {
 document.getElementById('exportIncomeCsv')?.addEventListener('click', () => exportCsv('sale.csv', incomeRecords));
 document.getElementById('exportExpensesCsv')?.addEventListener('click', () => exportCsv('expenses.csv', expenseRecords));
 
-// NAVIGATION
+// NAVIGATION & FILTERS
 document.querySelectorAll('.nav a').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
@@ -756,23 +839,17 @@ document.querySelectorAll('.nav a').forEach(a => {
   });
 });
 
-// FILTERS
 ['dashboard','income','expenses'].forEach(p => {
   document.getElementById(`apply${p.charAt(0).toUpperCase() + p.slice(1)}Filter`)?.addEventListener('click', () => {
-    if(p==='dashboard') renderDashboard();
-    else if(p==='income') renderIncome();
-    else renderExpenses();
+    p === 'dashboard' ? renderDashboard() : (p === 'income' ? renderIncome() : renderExpenses());
   });
   document.getElementById(`clear${p.charAt(0).toUpperCase() + p.slice(1)}Filter`)?.addEventListener('click', () => {
     document.getElementById(`${p}From`).value = '';
     document.getElementById(`${p}To`).value = '';
-    if(p==='dashboard') renderDashboard();
-    else if(p==='income') renderIncome();
-    else renderExpenses();
+    p === 'dashboard' ? renderDashboard() : (p === 'income' ? renderIncome() : renderExpenses());
   });
 });
 
-// CLOSE INVOICE ON OUTSIDE CLICK
 document.getElementById('invoiceModal').addEventListener('click', (e) => {
   if (e.target === document.getElementById('invoiceModal')) {
     document.getElementById('invoiceModal').style.display = 'none';
